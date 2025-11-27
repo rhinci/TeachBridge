@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  backend:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    volumes:
+      - ./backend:/app  # Монтируем код для hot reload
+      - ./backend/media:/app/media  # Для файлов
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=True
+      - DATABASE_URL=sqlite:///db.sqlite3
+    command: python manage.py runserver 0.0.0.0:8000
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./frontend:/app  # Монтируем для hot reload
+      - /app/node_modules  # Исключаем node_modules
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
