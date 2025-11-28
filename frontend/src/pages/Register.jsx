@@ -1,9 +1,10 @@
-import styles from '../styles/Register.module.css';
+import AuthLayout from '../components/AuthLayout';
+import RegistrationForm from '../components/RegistrationForm';
 
 export default function Register() {
   return (
-    <div>
-        <h1>Регистрация</h1>
-    </div>
+    <AuthLayout>
+      <RegistrationForm />
+    </AuthLayout>
   );
 }

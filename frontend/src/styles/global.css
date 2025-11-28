@@ -1,0 +1,41 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: Arial;
+  font-size: 16px;
+  color: var(--color-text);
+  background-color: var(--color-bg);
+}
+
+
+:root {
+  /* --- Фон и поверхности --- */
+  --color-bg: #F0F4F8;
+  --color-surface: #FFFFFF;
+
+  /* --- Цвета текста --- */
+  --color-text: #000000;
+  --color-text-header: #2A4578;
+  --color-text-button: #FFFFFF;
+
+  /* --- Основные цвета интерфейса --- */
+  --color-primary: #3B63AB;
+  --color-button-hover: #2A4578;
+  --color-border-form: #D9D9D9;
+
+  /* --- Состояния --- */
+  --color-success: #4caf50;
+  --color-warning: #ff9800;
+  --color-danger: #f44336;
+
+}
