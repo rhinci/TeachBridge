@@ -9,6 +9,7 @@ export default function AuthLayout({ children }) {
     }}>
       <Header />
       <main style={{
+        width: '100%',
         padding: '60px 20px',
         display: 'flex',
         justifyContent: 'center',
