@@ -1,10 +1,12 @@
-import AuthLayout from '../components/AuthLayout';
-import LoginForm from '../components/LoginForm';
+import React from 'react';
 
-export default function Login() {
+const Login = () => {
   return (
-    <AuthLayout>
-      <LoginForm />
-    </AuthLayout>
+    <div>
+      <h1>Добро пожаловать на TeachBridge!</h1>
+      <p>Это авторизация.</p>
+    </div>
   );
-}
+};
+
+export default Login;
