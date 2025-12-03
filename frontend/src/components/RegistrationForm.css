@@ -1,0 +1,115 @@
+h2 {
+    margin: 0;
+    text-align: center;
+    color: var(--color-text-header);
+}
+
+.divider {
+    height: 2px;
+    background-color: var(--color-border);
+    margin: 2rem 0;
+}
+
+.registration-form {
+  background: var(--color-surface);
+  padding: 2.5rem;
+  border-radius: 15px;
+  border: 2px solid var(--color-border);
+  max-width: 700px;
+}
+
+/* ФИО — в строку */
+.form-row {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.form-row .form-group {
+  flex: 1;
+  min-width: 140px;
+}
+
+/* остальные поля — один под другим */
+.form-group {
+  margin-bottom: 1.75rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.7rem;
+  font-weight: bold;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid var(--color-border);
+  border-radius: 10px;
+  font-size: 16px;
+}
+
+.form-group input.error,
+.form-group select.error {
+  border-color: var(--color-danger);
+}
+
+.error-message {
+  color: var(--color-danger);
+  font-size: 13px;
+  margin-left: 5px;
+}
+
+/* аватарка */
+.avatar-preview {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* кнопки */
+.form-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 2.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.btn-register {
+  background-color: var(--color-primary);
+  color: var(--color-text-button);
+  padding: 12px 30px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.login-link {
+  font-size: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.login-link a {
+  color: var(--color-primary);
+  font-weight: bold;
+}
+
+.login-link a:hover {
+  color: var(--color-button-hover);
+}
