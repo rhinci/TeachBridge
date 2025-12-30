@@ -4,6 +4,7 @@ from django.db import models
 
 class Department(models.Model):
     name = models.CharField(max_length=200, verbose_name="Название", unique=True)
+    code = models.CharField(max_length=50, verbose_name="Код департамента", unique=True) # временно
     director = models.OneToOneField(
         'User', 
         on_delete=models.SET_NULL, 
@@ -22,6 +23,7 @@ class Department(models.Model):
 
 class StudyGroup(models.Model):
     name = models.CharField(max_length=50, verbose_name="Название группы", unique=True)
+    code = models.CharField(max_length=20, verbose_name="Код группы", unique=True) # временно
     department = models.ForeignKey(
         Department, 
         on_delete=models.CASCADE, 
