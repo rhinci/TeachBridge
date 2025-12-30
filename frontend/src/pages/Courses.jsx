@@ -1,15 +1,15 @@
 import React from 'react';
 import MainLayout from '../components/Layout/MainLayout';
 
-const Home = () => {
+const Courses = () => {
   return (
     <MainLayout>
       <div className='test'>
-        <div className='heh'>STUDY CHATS </div>
+        <div className='heh'>COURSES</div>
       </div>
       
     </MainLayout>
   );
 };
 
-export default Home;
+export default Courses;

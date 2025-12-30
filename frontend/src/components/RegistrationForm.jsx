@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import './RegistrationForm.css';
+import '../styles/RegistrationForm.css';
 
 const RegistrationForm = () => {
   // в БД
@@ -100,7 +100,7 @@ const RegistrationForm = () => {
   };
 
 return (
-    <form className="registration-form" onSubmit={handleSubmit}>
+    <form className="form" onSubmit={handleSubmit}>
       <h2>Создать аккаунт</h2>
       <div className="divider"></div>
       {/* ФИО */}

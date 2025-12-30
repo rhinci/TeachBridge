@@ -4,20 +4,6 @@ h2 {
     color: var(--color-text-header);
 }
 
-.divider {
-    height: 2px;
-    background-color: var(--color-border);
-    margin: 2rem 0;
-}
-
-.registration-form {
-  background: var(--color-surface);
-  padding: 2.5rem;
-  border-radius: 15px;
-  border: 2px solid var(--color-border);
-  max-width: 700px;
-}
-
 /* ФИО — в строку */
 .form-row {
   display: flex;
@@ -43,12 +29,28 @@ h2 {
 }
 
 .form-group input,
-.form-group select {
+.form-group select, .input-code {
   width: 100%;
   padding: 0.75rem;
   border: 2px solid var(--color-border);
   border-radius: 10px;
   font-size: 16px;
+}
+
+.group-forgot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.forgot-text {
+  margin-top: 20px;
+}
+
+.input-code {
+  width: 50%;
+  margin-top: 50px;
+  margin-bottom: 80px;
 }
 
 .form-group input.error,
@@ -91,7 +93,7 @@ h2 {
 .btn-register {
   background-color: var(--color-primary);
   color: var(--color-text-button);
-  padding: 12px 30px;
+  padding: 12px 45px;
   border-radius: 20px;
   cursor: pointer;
   font-size: 16px;
@@ -110,6 +112,17 @@ h2 {
   font-weight: bold;
 }
 
-.login-link a:hover {
+.login-link a:hover, .forgot-link:hover a {
   color: var(--color-button-hover);
+}
+
+.forgot-link {
+  font-size: 14px;
+  margin-top: 4px;
+  text-align: right;
+}
+
+.forgot-link a {
+  color: var(--color-primary);
+  font-weight: bold;
 }

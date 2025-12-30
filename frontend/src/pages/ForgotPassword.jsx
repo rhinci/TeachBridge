@@ -1,13 +1,13 @@
 import React from 'react';
 import BaseLayout from '../components/Layout/BaseLayout';
-import LoginForm from '../components/LoginForm';
+import ForgotForm1 from '../components/ForgotForm1'
 
-const Login = () => {
+const ForgotPassword = () => {
   return (
     <BaseLayout>
-      <LoginForm/>
+      <ForgotForm1/>
     </BaseLayout>
   );
 };
 
-export default Login;
+export default ForgotPassword;
