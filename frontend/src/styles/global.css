@@ -7,6 +7,7 @@
   --color-text: #000000;
   --color-text-header: #2A4578;
   --color-text-button: #FFFFFF;
+  --color-text-secondary: #808A94;
 
   /* --- Основные цвета интерфейса --- */
   --color-primary: #3B63AB;
@@ -46,13 +47,6 @@ button {
 button:hover {
   background-color: var(--color-button-hover);
 }
-
-/*input, select {
-  padding: 8px;
-  border: 2px solid var(--color-border);
-  border-radius: 10px;
-  font-size: 14px;
-}*/
 
 .base-layout {
   min-height: 100vh;
@@ -213,14 +207,127 @@ button:hover {
   width: 650px;
 }
 
-.test{
+.main-block-page{
   display: flex;
   flex-direction: column;
-  gap: 400px;
-  border: 2px solid black;
-  width: 1000px;
+  gap: 20px;
+  max-width: 1000px;
+  width: 100%;
 }
-.heh {
+
+.main-content {
   max-width: 1000px;
   overflow-wrap: break-word
+}
+
+.custom-header {
+  color: var(--color-text-header);
+  font-size: 32px;
+}
+
+.search-input-wrapper {
+  position: relative;
+  display: inline-block;
+  width: 60%;
+  margin-bottom: 30px;
+}
+
+.search-input-wrapper input {
+  padding: 0.75rem 0.75rem 0.75rem 1.25rem;
+  border: 2px solid var(--color-border);
+  border-radius: 50px;
+  width: 100%;
+  font-size: 16px;
+  box-sizing: border-box;
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  transition: border-color 0.2s;
+}
+
+.search-input-wrapper input:focus {
+  outline: none;
+  border-color: var(--color-text-header);
+}
+
+.search-icon {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none; 
+  color: var(--color-text);
+  opacity: 0.6;
+}
+
+.search-input-wrapper input:focus + .search-icon {
+  color: var(--color-text-header);
+  opacity: 1;
+}
+
+.study-chats-container {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.study-chat-component {
+  border: 2px solid var(--color-border);
+  background-color: var(--color-surface);
+  padding: 16px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  min-height: 72px;
+}
+
+.study-chat-icon img {
+  width: 70px;
+  height: 70px;
+  border-radius: 20px;
+  object-fit: cover;
+}
+
+.study-chat-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.study-chat-info .chat-name {
+  font-size: 24px;
+  color: var(--color-text-header);
+  margin-bottom: 8px;
+}
+
+.study-chat-info .chat-section {
+  color: var(--color-text-secondary);
+}
+
+.study-chat-info .chat-latest-message {
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.study-chat-messages {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.study-chat-messages .message-count {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background-color: var(--color-primary);
+  color: var(--color-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
