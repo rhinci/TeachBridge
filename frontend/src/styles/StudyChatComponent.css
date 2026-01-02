@@ -1,0 +1,61 @@
+.study-chat-component {
+  border: 2px solid var(--color-border);
+  background-color: var(--color-surface);
+  padding: 16px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  min-height: 72px;
+}
+
+.study-chat-icon img {
+  width: 80px;
+  height: 80px;
+  border-radius: 20px;
+  object-fit: cover;
+}
+
+.study-chat-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.study-chat-info .study-chat-name {
+  font-size: 24px;
+  color: var(--color-text-header);
+  margin-bottom: 8px;
+}
+
+.study-chat-info .study-chat-section {
+  color: var(--color-text-secondary);
+}
+
+.study-chat-info .study-chat-latest-message {
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.study-chat-messages {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.study-chat-messages .study-message-count {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background-color: var(--color-primary);
+  color: var(--color-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

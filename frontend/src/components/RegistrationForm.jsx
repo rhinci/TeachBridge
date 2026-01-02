@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import '../styles/RegistrationForm.css';
+import { register } from '../services/authService';
 
 const RegistrationForm = () => {
+  const navigate = useNavigate();
   // в БД
   const [formData, setFormData] = useState({
     firstName: '', // имя
@@ -90,14 +92,42 @@ const RegistrationForm = () => {
   };
 
   // обработчик отправки формы
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (validate()) {
-      console.log('Данные для отправки на бэкенд:', formData);
-      // Здесь можно вызвать функцию отправки на бэкенд
-      // Например: sendRegistrationData(formData);
+const handleSubmit = async (e) => {
+  e.preventDefault();
+    const isValid = validate();
+  console.log('Валидация пройдена:', isValid);
+  if (validate()) {
+    try {
+      // Отправляем данные на бэкенд
+      const response = await register({
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        middleName: formData.middleName,
+        role: formData.role,
+        email: formData.email,
+        password: formData.password,
+        groupNumber: formData.groupNumber,
+        avatar: formData.avatar, // передаем файл
+      });
+
+      // Успешная регистрация
+      console.log('Успех:', response);
+      alert('Регистрация прошла успешно!');
+
+      navigate('/');
+
+    } catch (error) {
+      // Обработка ошибок
+      console.error('Ошибка регистрации:', error);
+      let errorMessage = 'Произошла ошибка при регистрации.';
+      if (error.response?.data) {
+        // Показываем ошибки от бэкенда (например, "Пользователь с таким email уже существует")
+        errorMessage = Object.values(error.response.data).flat().join(', ');
+      }
+      alert(errorMessage);
     }
-  };
+  }
+};
 
 return (
     <form className="form" onSubmit={handleSubmit}>

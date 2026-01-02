@@ -1,0 +1,71 @@
+.personal-chat-component {
+  border: 2px solid var(--color-border);
+  background-color: var(--color-surface);
+  padding: 16px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  min-height: 72px;
+}
+
+.personal-chat-icon img {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.personal-chat-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.personal-chat-name-role {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 24px;
+}
+
+.personal-chat-name-role .personal-chat-name {
+  color: var(--color-text-header);
+}
+
+.personal-chat-name-role .dot {
+  color: var(--color-text-secondary);
+}
+
+.personal-chat-name-role .personal-chat-role {
+  color: var(--color-text-secondary);
+  font-size: 20px;
+}
+
+.personal-chat-info .personal-chat-latest-message {
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.personal-chat-messages {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.personal-chat-messages .personal-message-count {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background-color: var(--color-primary);
+  color: var(--color-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
