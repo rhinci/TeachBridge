@@ -1,3 +1,123 @@
-from django.shortcuts import render
+# backend/apps/users/views.py
+from rest_framework import viewsets, status, permissions
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from rest_framework_simplejwt.tokens import RefreshToken
+from django.contrib.auth import get_user_model
+from django.contrib.auth import authenticate
+from .serializers import (
+    UserRegistrationSerializer, 
+    UserSerializer,
+    StudyGroupSerializer,
+    DepartmentSerializer
+)
+from .models import StudyGroup, Department
 
-# Create your views here.
+User = get_user_model()
+
+class UserViewSet(viewsets.ModelViewSet):
+    """ViewSet для управления пользователями"""
+    queryset = User.objects.all().order_by('-date_joined')
+    serializer_class = UserSerializer
+    
+    def get_permissions(self):
+        """Разные permissions для разных действий"""
+        if self.action in ['register', 'login', 'study_groups', 'departments']:
+            permission_classes = [permissions.AllowAny]
+        elif self.action in ['retrieve', 'update', 'partial_update', 'me']:
+            permission_classes = [permissions.IsAuthenticated]
+        else:  # list, create, destroy
+            permission_classes = [permissions.IsAdminUser]
+        return [permission() for permission in permission_classes]
+    
+    @action(detail=False, methods=['post'], url_path='register')
+    def register(self, request):
+        """Регистрация нового пользователя"""
+        serializer = UserRegistrationSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.save()
+            
+            # Здесь позже добавим создание уведомления для администратора
+            
+            return Response({
+                'message': 'Регистрация успешна! Ожидайте подтверждения администратором.',
+                'user_id': user.id
+            }, status=status.HTTP_201_CREATED)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    @action(detail=False, methods=['post'], url_path='login')
+    def login(self, request):
+        """Авторизация пользователя"""
+        email = request.data.get('email')
+        password = request.data.get('password')
+        
+        if not email or not password:
+            return Response(
+                {'error': 'Пожалуйста, предоставьте email и пароль'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Аутентифицируем пользователя
+        user = authenticate(username=email, password=password)
+        
+        if user is None:
+            return Response(
+                {'error': 'Неверные учетные данные'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+        
+        if not user.is_approved:
+            return Response(
+                {'error': 'Ваш аккаунт еще не подтвержден администратором'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        if not user.is_active:
+            return Response(
+                {'error': 'Ваш аккаунт отключен'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        # Генерируем JWT токены
+        refresh = RefreshToken.for_user(user)
+        
+        return Response({
+            'user': UserSerializer(user).data,
+            'refresh': str(refresh),
+            'access': str(refresh.access_token),
+        })
+    
+    @action(detail=False, methods=['get'], url_path='me')
+    def me(self, request):
+        """Получение информации о текущем пользователе"""
+        serializer = UserSerializer(request.user)
+        return Response(serializer.data)
+    
+    @action(detail=False, methods=['get'], url_path='study-groups')
+    def study_groups(self, request):
+        """Получение списка учебных групп (для формы регистрации)"""
+        groups = StudyGroup.objects.all()
+        serializer = StudyGroupSerializer(groups, many=True)
+        return Response(serializer.data)
+    
+    @action(detail=False, methods=['get'], url_path='departments')
+    def departments(self, request):
+        """Получение списка департаментов"""
+        departments = Department.objects.all()
+        serializer = DepartmentSerializer(departments, many=True)
+        return Response(serializer.data)
+
+
+class StudyGroupViewSet(viewsets.ReadOnlyModelViewSet):
+    """ViewSet для учебных групп (только чтение)"""
+    queryset = StudyGroup.objects.all()
+    serializer_class = StudyGroupSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+
+class DepartmentViewSet(viewsets.ReadOnlyModelViewSet):
+    """ViewSet для департаментов (только чтение)"""
+    queryset = Department.objects.all()
+    serializer_class = DepartmentSerializer
+    permission_classes = [permissions.IsAuthenticated]
