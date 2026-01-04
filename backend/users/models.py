@@ -1,10 +1,37 @@
-# backend/apps/users/models.py
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.utils.translation import gettext_lazy as _
+from django.contrib.auth.models import BaseUserManager
+
+class UserManager(BaseUserManager):
+    """Кастомный менеджер для работы с email вместо username"""
+    
+    def create_user(self, email, password=None, **extra_fields):
+        if not email:
+            raise ValueError('Требуется email')
+        email = self.normalize_email(email)
+        user = self.model(email=email, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+    
+    def create_superuser(self, email, password=None, **extra_fields):
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+        extra_fields.setdefault('is_approved', True)
+        extra_fields.setdefault('is_active', True)
+        extra_fields.setdefault('role', 'admin')
+        
+        if extra_fields.get('is_staff') is not True:
+            raise ValueError('Суперпользователь должен иметь is_staff=True')
+        if extra_fields.get('is_superuser') is not True:
+            raise ValueError('Суперпользователь должен иметь is_superuser=True')
+        
+        return self.create_user(email, password, **extra_fields)
+
 
 class Department(models.Model):
     name = models.CharField(max_length=200, verbose_name="Название", unique=True)
-    code = models.CharField(max_length=50, verbose_name="Код департамента", unique=True) # временно
     director = models.OneToOneField(
         'User', 
         on_delete=models.SET_NULL, 
@@ -22,8 +49,7 @@ class Department(models.Model):
         return self.name
 
 class StudyGroup(models.Model):
-    name = models.CharField(max_length=50, verbose_name="Название группы", unique=True)
-    code = models.CharField(max_length=20, verbose_name="Код группы", unique=True) # временно
+    code = models.CharField(max_length=20, verbose_name="Код группы", unique=True)
     department = models.ForeignKey(
         Department, 
         on_delete=models.CASCADE, 
@@ -32,7 +58,7 @@ class StudyGroup(models.Model):
     )
     
     def __str__(self):
-        return f"{self.name} ({self.department})"
+        return f"{self.code} ({self.department})"
     
     class Meta:
         verbose_name = "Учебная группа"
@@ -45,6 +71,15 @@ class User(AbstractUser):
         DIRECTOR = 'director', 'Директор департамента'
         ADMIN = 'admin', 'Администратор ИС'
     
+    username = None
+    objects = UserManager()
+
+    email = models.EmailField(
+        _('Корпоративная почта'),
+        unique=True,
+        help_text=_('Используйте почту в домене ДВФУ')
+    )
+
     role = models.CharField(
         max_length=20, 
         choices=Role.choices,
@@ -98,6 +133,9 @@ class User(AbstractUser):
         related_name='custom_user_set',
         related_query_name='user',
     )
+
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['first_name', 'last_name', 'role']
     
     def get_full_name(self):
         """Возвращает полное имя с отчеством."""
@@ -106,9 +144,14 @@ class User(AbstractUser):
             full_name += f" {self.patronymic}"
         return full_name
     
+    def get_short_name(self):
+        """Возвращает короткое имя (Имя Фамилия)"""
+        return f"{self.first_name} {self.last_name}"
+    
     def __str__(self):
         return f"{self.get_full_name()} ({self.get_role_display()})"
     
     class Meta:
         verbose_name = "Пользователь"
         verbose_name_plural = "Пользователи"
+        ordering = ['last_name', 'first_name']

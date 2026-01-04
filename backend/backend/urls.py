@@ -6,7 +6,7 @@ from django.conf.urls.static import static
 from django.http import HttpResponse
 
 def home_view(request):
-    """Простая заглушка для корневой страницы"""
+    """Заглушка для корневой страницы"""
     return HttpResponse("""
         <h1>Образовательная платформа ДВФУ</h1>
         <p>Backend API работает корректно!</p>
