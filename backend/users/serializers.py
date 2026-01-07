@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
-from .models import Department, StudyGroup
+from .models import Department, StudyGroup, PasswordResetCode
 
 User = get_user_model()
 
@@ -76,3 +76,59 @@ class DepartmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Department
         fields = ('id', 'name')
+
+
+
+class PasswordResetRequestSerializer(serializers.Serializer):
+    """Сериализатор для запроса восстановления пароля"""
+    email = serializers.EmailField(required=True)
+    
+    def validate_email(self, value):
+        """Проверяем, есть ли пользователь с таким email"""
+        if not User.objects.filter(email=value).exists():
+            raise serializers.ValidationError("Пользователь с таким email не найден")
+        
+        # Проверяем домен ДВФУ (опционально)
+        if not value.endswith('@dvfu.ru'):
+            raise serializers.ValidationError("Используйте корпоративную почту ДВФУ")
+        
+        return value
+
+
+class PasswordResetConfirmSerializer(serializers.Serializer):
+    """Сериализатор для подтверждения сброса пароля"""
+    email = serializers.EmailField(required=True)
+    code = serializers.CharField(min_length=6, max_length=6, required=True)
+    new_password = serializers.CharField(write_only=True, required=True)
+    new_password2 = serializers.CharField(write_only=True, required=True)
+    
+    def validate(self, data):
+        """Валидация данных"""
+        # Проверяем совпадение паролей
+        if data['new_password'] != data['new_password2']:
+            raise serializers.ValidationError({"new_password": "Пароли не совпадают"})
+        
+        # Проверяем пользователя
+        try:
+            user = User.objects.get(email=data['email'])
+        except User.DoesNotExist:
+            raise serializers.ValidationError({"email": "Пользователь не найден"})
+        
+        # Проверяем код
+        try:
+            reset_code = PasswordResetCode.objects.get(
+                user=user,
+                code=data['code'],
+                is_used=False
+            )
+            
+            if not reset_code.is_valid():
+                raise serializers.ValidationError({"code": "Код недействителен или истёк"})
+            
+            data['reset_code'] = reset_code
+            data['user'] = user
+            
+        except PasswordResetCode.DoesNotExist:
+            raise serializers.ValidationError({"code": "Неверный код"})
+        
+        return data

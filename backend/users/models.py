@@ -2,6 +2,11 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import BaseUserManager
+import random
+import string
+from django.utils import timezone
+from datetime import timedelta
+
 
 class UserManager(BaseUserManager):
     """Кастомный менеджер для работы с email вместо username"""
@@ -155,3 +160,57 @@ class User(AbstractUser):
         verbose_name = "Пользователь"
         verbose_name_plural = "Пользователи"
         ordering = ['last_name', 'first_name']
+
+
+
+class PasswordResetCode(models.Model):
+    """Модель для кодов восстановления пароля"""
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='reset_codes',
+        verbose_name="Пользователь"
+    )
+    
+    code = models.CharField(
+        max_length=6,
+        verbose_name="Код восстановления"
+    )
+    
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Дата создания"
+    )
+    
+    expires_at = models.DateTimeField(
+        verbose_name="Действителен до"
+    )
+    
+    is_used = models.BooleanField(
+        default=False,
+        verbose_name="Использован"
+    )
+    
+    class Meta:
+        verbose_name = "Код восстановления пароля"
+        verbose_name_plural = "Коды восстановления пароля"
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.user.email}: {self.code}"
+    
+    def save(self, *args, **kwargs):
+        """Генерируем код и срок действия при создании"""
+        if not self.pk:  # Если объект создаётся впервые
+            # Генерируем 6-значный код
+            self.code = ''.join(random.choices(string.digits, k=6))
+            # Действителен 15 минут
+            self.expires_at = timezone.now() + timedelta(minutes=15)
+        super().save(*args, **kwargs)
+    
+    def is_valid(self):
+        """Проверяет, действителен ли код"""
+        return (
+            not self.is_used and 
+            timezone.now() <= self.expires_at
+        )

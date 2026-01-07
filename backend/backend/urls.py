@@ -23,7 +23,16 @@ def home_view(request):
 
                     <li>GET /api/auth/users/departments/ - департаменты</a></li>
 
-                    <li>GET /api/auth/users/users/ - пользователи</a></li> 
+                    <li>GET /api/auth/users/users/ - пользователи</a></li>
+                        
+                    <li>GET /api/auth/users/me/ - Информация о текущем пользователе</a></li>
+                         
+                    <li>POST /api/auth/password-reset/request/ - Запрос кода восстановления пароля</a></li>
+
+                    <li>POST /api/auth/password-reset/confirm/ - Подтверждение восстановления пароля</a></li>
+
+                    <li>POST /api/auth/token/refresh/ - Обновление JWT токена</a></li>   
+                    
                 </ul>
             <li><a href="/api/chats/">API чатов</a>
                 <ul>
@@ -32,10 +41,14 @@ def home_view(request):
                     <li>GET /api/chats/chats/personal_chats/ - личные чаты</a></li>
 
                     <li>POST /api/chats/chats/ - создать чат</a></li>
+                        
+                    <li>POST /api/chats/chats/{id}/add_participant/ - Добавить участника в чат</a></li>
 
                     <li>GET /api/chats/messages/chat_messages/?chat_id=1 - сообщения чата</a></li>
 
                     <li>POST /api/chats/messages/ - отправить сообщение</li></a></li>
+                        
+                    <li>GET /api/chats/messages/chat_messages/?chat_id=1 - Сообщения конкретного чата</li></a></li>
                 </ul>
         </ul>
         <p>Frontend запускается на <a href="http://localhost:3000">http://localhost:3000</a></p>

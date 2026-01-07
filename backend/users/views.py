@@ -9,9 +9,15 @@ from .serializers import (
     UserRegistrationSerializer, 
     UserSerializer,
     StudyGroupSerializer,
-    DepartmentSerializer
+    DepartmentSerializer,
+    PasswordResetRequestSerializer,
+    PasswordResetConfirmSerializer
 )
 from .models import StudyGroup, Department
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
+from .models import PasswordResetCode
 
 User = get_user_model()
 
@@ -22,7 +28,7 @@ class UserViewSet(viewsets.ModelViewSet):
     
     def get_permissions(self):
         """Разные permissions для разных действий"""
-        if self.action in ['register', 'login', 'study_groups', 'departments']:
+        if self.action in ['register', 'login', 'study_groups', 'departments', 'password_reset_request', 'password_reset_confirm']:
             permission_classes = [permissions.AllowAny]
         elif self.action in ['retrieve', 'update', 'partial_update', 'me']:
             permission_classes = [permissions.IsAuthenticated]
@@ -107,6 +113,65 @@ class UserViewSet(viewsets.ModelViewSet):
         departments = Department.objects.all()
         serializer = DepartmentSerializer(departments, many=True)
         return Response(serializer.data)
+    
+
+
+    @action(detail=False, methods=['post'], url_path='password-reset/request')
+    def password_reset_request(self, request):
+        """Запрос на восстановление пароля"""
+        serializer = PasswordResetRequestSerializer(data=request.data)
+        
+        if serializer.is_valid():
+            email = serializer.validated_data['email']
+            
+            try:
+                user = User.objects.get(email=email)
+                
+                # Создаём новый код (старые помечаем как использованные)
+                PasswordResetCode.objects.filter(user=user, is_used=False).update(is_used=True)
+                reset_code = PasswordResetCode.objects.create(user=user)
+
+                subject = 'Восстановление пароля - Образовательная платформа ДВФУ'
+                message = f"""
+                Восстановление пароля для образовательной платформы ДВФУ
+
+                Здравствуйте, {user.get_full_name()}!
+
+                Вы запросили восстановление пароля для вашего аккаунта.
+
+                Код восстановления: {reset_code.code}
+
+                Код действителен 15 минут.
+
+                Если вы не запрашивали восстановление пароля, проигнорируйте это письмо.
+
+                С уважением,
+                Команда TeachBridge
+                """
+                
+                send_mail(
+                    subject=subject,
+                    message=message,
+                    from_email='noreply@dvfu.ru',
+                    recipient_list=[user.email],
+                    fail_silently=False,
+                )
+                
+                # Для тестирования - возвращаем код в ответе
+                # В ПРОДАКШЕНЕ ЭТО УБРАТЬ!
+                return Response({
+                    'message': 'Код восстановления отправлен на вашу почту',
+                    'email': user.email,
+                    'code': reset_code.code  # ТОЛЬКО ДЛЯ ТЕСТИРОВАНИЯ!
+                })
+                
+            except User.DoesNotExist:
+                # Для безопасности не говорим, существует ли пользователь
+                return Response({
+                    'message': 'Если email зарегистрирован, код будет отправлен'
+                }, status=status.HTTP_200_OK)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class StudyGroupViewSet(viewsets.ReadOnlyModelViewSet):
