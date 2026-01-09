@@ -172,6 +172,30 @@ class UserViewSet(viewsets.ModelViewSet):
                 }, status=status.HTTP_200_OK)
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    @action(detail=False, methods=['post'], url_path='password-reset/confirm')
+    def password_reset_confirm(self, request):
+        """Подтверждение восстановления пароля"""
+        serializer = PasswordResetConfirmSerializer(data=request.data)
+        
+        if serializer.is_valid():
+            user = serializer.validated_data['user']
+            reset_code = serializer.validated_data['reset_code']
+            new_password = serializer.validated_data['new_password']
+            
+            # Меняем пароль
+            user.set_password(new_password)
+            user.save()
+            
+            # Помечаем код как использованный
+            reset_code.is_used = True
+            reset_code.save()
+            
+            return Response({
+                'message': 'Пароль успешно изменён. Теперь вы можете войти с новым паролем.'
+            })
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class StudyGroupViewSet(viewsets.ReadOnlyModelViewSet):
