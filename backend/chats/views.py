@@ -61,23 +61,39 @@ class ChatViewSet(viewsets.ModelViewSet):
         chats = self.get_queryset().filter(chat_type=Chat.ChatType.PERSONAL)
         serializer = self.get_serializer(chats, many=True)
         return Response(serializer.data)
-    
-    @action(detail=True, methods=['post'])
-    def add_participant(self, request, pk=None):
-        """Добавить участника в чат (только для личных чатов)"""
-        chat = self.get_object()
         
-        if chat.chat_type != Chat.ChatType.PERSONAL:
+    @action(detail=False, methods=['post'], url_path='create-personal')
+    def create_personal_chat(self, request):
+        """Создать личный чат с пользователем"""
+        user_id = request.data.get('user_id')
+        
+        if not user_id:
             return Response(
-                {"error": "Можно добавлять участников только в личные чаты"},
+                {"error": "Не указан user_id"},
                 status=status.HTTP_400_BAD_REQUEST
             )
         
-        user_id = request.data.get('user_id')
         try:
-            user = User.objects.get(id=user_id)
-            chat.participants.add(user)
-            return Response({"message": "Пользователь добавлен"})
+            other_user = User.objects.get(id=user_id)
+            
+            # Проверяем, нет ли уже личного чата
+            existing_chat = Chat.objects.filter(
+                chat_type=Chat.ChatType.PERSONAL,
+                participants=request.user
+            ).filter(participants=other_user).distinct().first()
+            
+            if existing_chat:
+                return Response(ChatSerializer(existing_chat).data)
+            
+            # Создаём новый
+            chat = Chat.objects.create(
+                chat_type=Chat.ChatType.PERSONAL,
+                created_by=request.user
+            )
+            chat.participants.add(request.user, other_user)
+            
+            return Response(ChatSerializer(chat).data, status=status.HTTP_201_CREATED)
+            
         except User.DoesNotExist:
             return Response(
                 {"error": "Пользователь не найден"},

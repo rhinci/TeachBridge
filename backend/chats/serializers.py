@@ -74,6 +74,20 @@ class ChatSerializer(serializers.ModelSerializer):
             data['attached_courses'] = []
         
         return data
+    
+    unread_count = serializers.SerializerMethodField()
+    
+    def get_unread_count(self, obj):
+        """Количество непрочитанных сообщений в чате"""
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            from notifications.models import Notification
+            return Notification.objects.filter(
+                user=request.user,
+                related_chat_id=obj.id,
+                is_read=False
+            ).count()
+        return 0
 
 
 class MessageSerializer(serializers.ModelSerializer):

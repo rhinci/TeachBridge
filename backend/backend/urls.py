@@ -34,6 +34,8 @@ def home_view(request):
                     <li>POST /api/auth/token/refresh/ - Обновление JWT токена</a></li>   
                     
                 </ul>
+            </li>
+                        
             <li><a href="/api/chats/">API чатов</a>
                 <ul>
                     <li>GET /api/chats/chats/group_chats/ - учебные чаты</a></li>
@@ -50,8 +52,9 @@ def home_view(request):
                         
                     <li>GET /api/chats/messages/chat_messages/?chat_id=1 - Сообщения конкретного чата</li></a></li>
                 </ul>
+            </li>
                         
-            <li><a href="/api/chats/">API курсов</a>
+            <li><a href="/api/courses/">API курсов</a>
                 <ul>
                     <li>POST /api/courses/courses/ - создать курс</a></li>
 
@@ -63,6 +66,21 @@ def home_view(request):
 
                     <li>GET /api/courses/courses/ - получить все курсы</a></li>
                 </ul>
+            </li>
+                        
+            <li><a href="/api/notifications/">API уведомлений</a>
+                <ul>
+                    <li>GET /api/notifications/notifications/ - все уведомления</a></li>
+
+                    <li>GET /api/notifications/notifications/recent/ - последние 10 уведов</a></li>
+
+                    <li>GET /api/notifications/notifications/unread_count/ - счётчик непрочитанных</a></li>
+                        
+                    <li>POST /api/notifications/notifications/mark_all_as_read/ - прочитать всё</a></li>
+
+                    <li>POST /api/notifications/notifications/{id}/mark_as_read/ - прочитать одно</a></li>
+                </ul>
+            </li>
         </ul>
         <p>Frontend запускается на <a href="http://localhost:3000">http://localhost:3000</a></p>
     """)
@@ -74,6 +92,7 @@ urlpatterns = [
     path('api/auth/', include('users.urls')),
     path('api/chats/', include('chats.urls')),
     path('api/courses/', include('courses.urls')),
+    path('api/notifications/', include('notifications.urls')),
 ]
 
 if settings.DEBUG:
