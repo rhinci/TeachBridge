@@ -1,25 +1,23 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom'; 
 
 const LoginForm = () => {
-  // в БД
+  const navigate = useNavigate(); // для перехода после входа
+
   const [formData, setFormData] = useState({
-    role: '', // роль
-    email: '', // почта
-    password: '', // пароль
+    email: '',
+    password: '',
   });
 
-  // копим ошибки
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
 
-  // обработчик изменения полей
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
-    // очистить ошибку при изменении поля
     if (errors[name]) {
       setErrors((prev) => {
         const newErrors = { ...prev };
@@ -29,58 +27,83 @@ const LoginForm = () => {
     }
   };
 
-  // валидация формы
   const validate = () => {
     const newErrors = {};
 
-    if (!formData.role) newErrors.role = 'Выберите роль';
     if (!formData.email.trim()) {
       newErrors.email = 'Корпоративная почта обязательна';
-    } else if (!/^\S+@\S+\.\S+$/.test(formData.email)) {
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newErrors.email = 'Некорректный email';
+    } else if (!formData.email.trim().endsWith('@dvfu.ru')) {
+      newErrors.email = 'Используйте почту @dvfu.ru';
     }
+
     if (!formData.password) {
       newErrors.password = 'Пароль обязателен';
-    } else if (formData.password.length < 6) {
-      newErrors.password = 'Пароль должен быть не менее 6 символов';
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  // обработчик отправки формы
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (validate()) {
-      console.log('Данные для отправки на бэкенд:', formData);
-      // Здесь можно вызвать функцию отправки на бэкенд
-      // Например: sendRegistrationData(formData);
+    if (!validate()) return;
+
+    setLoading(true);
+    setErrors({});
+
+    try {
+      const response = await fetch('http://localhost:8000/api/auth/users/login/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: formData.email.trim(),
+          password: formData.password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Сохраняем токены и данные пользователя
+        localStorage.setItem('access_token', data.access);
+        localStorage.setItem('refresh_token', data.refresh);
+        localStorage.setItem('user', JSON.stringify(data.user));
+
+        // Перенаправляем на главнуб
+        navigate('/');
+      } else {
+        setErrors({});
+
+        if (data.error) {
+          if (data.error.includes('Неверные учетные данные')) {
+            setErrors({ password: 'Неверный email или пароль' });
+          } else if (data.error.includes('еще не подтвержден')) {
+            setErrors({ email: 'Аккаунт ещё не подтверждён администратором' });
+          } else if (data.error.includes('отключен')) {
+            setErrors({ email: 'Аккаунт отключён' });
+          } else {
+            setErrors({ email: data.error });
+          }
+        } else {
+          setErrors({ password: 'Ошибка входа. Проверьте email и пароль.' });
+        }
+      }
+    } catch (err) {
+      console.error('Network error:', err);
+      alert('Ошибка сети. Попробуйте позже.');
+    } finally {
+      setLoading(false);
     }
   };
 
-return (
+  return (
     <form className="form" onSubmit={handleSubmit}>
       <h2>Авторизоваться</h2>
       <div className="divider"></div>
-
-      {/* Роль */}
-      <div className="form-group">
-        <label htmlFor="role">Роль в системе*</label>
-        <select
-          id="role"
-          name="role"
-          value={formData.role}
-          onChange={handleChange}
-          className={errors.role ? 'error' : ''}
-        >
-          <option value="">-- Выберите роль --</option>
-          <option value="student">Студент</option>
-          <option value="teacher">Преподаватель</option>
-          <option value="director">Директор департамента</option>
-        </select>
-        {errors.role && <span className="error-message">{errors.role}</span>}
-      </div>
 
       {/* Email */}
       <div className="form-group">
@@ -109,14 +132,14 @@ return (
         />
         {errors.password && <span className="error-message">{errors.password}</span>}
       </div>
-      
+
       {/* Кнопки */}
-      <div className="form-actions">
+      <div className="form-actions-login ">
         <div className="forgot-link">
           <Link to="/forgotpassword">Забыли пароль?</Link>
         </div>
-        <button type="submit" className="btn-register">
-          Войти
+        <button type="submit" className="btn-register" disabled={loading}>
+          {loading ? 'Вход...' : 'Войти'}
         </button>
         <div className="login-link">
           <p>Впервые здесь?</p>

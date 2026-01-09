@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import '../styles/RegistrationForm.css';
-import { register } from '../services/authService';
 
 const RegistrationForm = () => {
   const navigate = useNavigate();
@@ -14,12 +13,28 @@ const RegistrationForm = () => {
     email: '', // почта
     password: '', // пароль
     confirmPassword: '', // повтор пароля
-    groupNumber: '', // номер группы
+    study_group: '', // номер группы
     avatar: null, // файл аватарки
   });
 
-  // копим ошибки
+  const [studyGroups, setStudyGroups] = useState([]);
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchStudyGroups = async () => {
+      try {
+        const response = await fetch('http://localhost:8000/api/auth/users/study-groups/');
+        if (response.ok) {
+          const data = await response.json();
+          setStudyGroups(data);
+        }
+      } catch (err) {
+        console.error('Не удалось загрузить учебные группы', err);
+      }
+    };
+    fetchStudyGroups();
+  }, []);
 
   // обработчик изменения полей
   const handleChange = (e) => {
@@ -70,8 +85,10 @@ const RegistrationForm = () => {
     if (!formData.role) newErrors.role = 'Выберите роль';
     if (!formData.email.trim()) {
       newErrors.email = 'Корпоративная почта обязательна';
-    } else if (!/^\S+@\S+\.\S+$/.test(formData.email)) {
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newErrors.email = 'Некорректный email';
+    } else if (!formData.email.trim().endsWith('@dvfu.ru')) {
+      newErrors.email = 'Используйте почту @dvfu.ru';
     }
     if (!formData.password) {
       newErrors.password = 'Пароль обязателен';
@@ -83,8 +100,8 @@ const RegistrationForm = () => {
     }
 
     // если роль = студент, то группа обязательна
-    if (formData.role === 'student' && !formData.groupNumber.trim()) {
-      newErrors.groupNumber = 'Выберите номер группы';
+    if (formData.role === 'student' && !formData.study_group) {
+      newErrors.study_group = 'Выберите учебную группу';
     }
 
     setErrors(newErrors);
@@ -92,42 +109,71 @@ const RegistrationForm = () => {
   };
 
   // обработчик отправки формы
-const handleSubmit = async (e) => {
-  e.preventDefault();
-    const isValid = validate();
-  console.log('Валидация пройдена:', isValid);
-  if (validate()) {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!validate()) return;
+
+    const fd = new FormData();
+    fd.append('first_name', formData.firstName.trim());
+    fd.append('last_name', formData.lastName.trim());
+    if (formData.middleName.trim()) {
+      fd.append('patronymic', formData.middleName.trim());
+    }
+    fd.append('role', formData.role);
+    fd.append('email', formData.email.trim());
+    fd.append('password', formData.password);
+    fd.append('password2', formData.confirmPassword);
+
+    if (formData.role === 'student' && formData.study_group) {
+      fd.append('study_group', formData.study_group);
+    }
+
+    if (formData.avatar) {
+      fd.append('photo', formData.avatar);
+    }
+
+    setLoading(true);
+    setErrors({});
+
     try {
-      // Отправляем данные на бэкенд
-      const response = await register({
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        middleName: formData.middleName,
-        role: formData.role,
-        email: formData.email,
-        password: formData.password,
-        groupNumber: formData.groupNumber,
-        avatar: formData.avatar, // передаем файл
+      const response = await fetch('http://localhost:8000/api/auth/users/register/', {
+        method: 'POST',
+        body: fd,
       });
 
-      // Успешная регистрация
-      console.log('Успех:', response);
-      alert('Регистрация прошла успешно!');
+      const data = await response.json();
 
-      navigate('/');
+      if (response.ok) {
+        alert('Регистрация успешна! Ожидайте подтверждения администратором.');
+        navigate('/login');
+      } else {
+        // Преобразуем ошибки DRF в удобный вид
+        const fieldMap = {
+          first_name: 'firstName',
+          last_name: 'lastName',
+          patronymic: 'middleName',
+          study_group: 'study_group',
+          password: 'password',
+          email: 'email',
+          role: 'role',
+        };
 
-    } catch (error) {
-      // Обработка ошибок
-      console.error('Ошибка регистрации:', error);
-      let errorMessage = 'Произошла ошибка при регистрации.';
-      if (error.response?.data) {
-        // Показываем ошибки от бэкенда (например, "Пользователь с таким email уже существует")
-        errorMessage = Object.values(error.response.data).flat().join(', ');
+        const newErrors = {};
+        for (const [field, messages] of Object.entries(data)) {
+          const uiField = fieldMap[field] || field;
+          newErrors[uiField] = messages[0];
+        }
+
+        setErrors(newErrors);
+        alert('Ошибка регистрации. Проверьте форму.');
       }
-      alert(errorMessage);
+    } catch (err) {
+      console.error('Network error:', err);
+      alert('Ошибка сети. Попробуйте позже.');
+    } finally {
+      setLoading(false);
     }
-  }
-};
+  };
 
 return (
     <form className="form" onSubmit={handleSubmit}>
@@ -220,21 +266,22 @@ return (
       {/* Учебная группа (если студент) */}
       {formData.role === 'student' && (
         <div className="form-group">
-          <label htmlFor="groupNumber">Учебная группа*</label>
+          <label htmlFor="study_group">Учебная группа*</label>
           <select
-            id="groupNumber"
-            name="groupNumber"
-            value={formData.groupNumber}
+            id="study_group"
+            name="study_group"
+            value={formData.study_group}
             onChange={handleChange}
-            className={errors.groupNumber ? 'error' : ''}
+            className={errors.study_group ? 'error' : ''}
           >
             <option value="">-- Выберите группу --</option>
-            <option value="101">Группа 101</option>
-            <option value="102">Группа 102</option>
-            <option value="103">Группа 103</option>
-            <option value="201">Группа 201</option>
+            {studyGroups.map((group) => (
+              <option key={group.id} value={group.id}>
+                {group.code} ({group.department.name})
+              </option>
+            ))}
           </select>
-          {errors.groupNumber && <span className="error-message">{errors.groupNumber}</span>}
+          {errors.study_group && <span className="error-message">{errors.study_group}</span>}
         </div>
       )}
 

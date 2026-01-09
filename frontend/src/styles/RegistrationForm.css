@@ -81,7 +81,7 @@ h2 {
 }
 
 /* кнопки */
-.form-actions, .form-actions-forgot-password {
+.form-actions, .form-actions-forgot-password,.form-actions-login {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -92,6 +92,10 @@ h2 {
 
 .form-actions-forgot-password {
   margin-top: 160px;
+}
+
+.form-actions-login {
+  margin-top: 110px;
 }
 
 .btn-register, .btn-reset {
