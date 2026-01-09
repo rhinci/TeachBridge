@@ -50,6 +50,19 @@ def home_view(request):
                         
                     <li>GET /api/chats/messages/chat_messages/?chat_id=1 - Сообщения конкретного чата</li></a></li>
                 </ul>
+                        
+            <li><a href="/api/chats/">API курсов</a>
+                <ul>
+                    <li>POST /api/courses/courses/ - создать курс</a></li>
+
+                    <li>POST /api/courses/courses/1/add-module/ - добавить модуль</a></li>
+
+                    <li>POST /api/courses/courses/1/modules/1/add-material/ - добавить материал</a></li>
+                        
+                    <li>GET /api/courses/courses/my-courses/ - получить "мои" курсы</a></li>
+
+                    <li>GET /api/courses/courses/ - получить все курсы</a></li>
+                </ul>
         </ul>
         <p>Frontend запускается на <a href="http://localhost:3000">http://localhost:3000</a></p>
     """)
@@ -60,6 +73,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/auth/', include('users.urls')),
     path('api/chats/', include('chats.urls')),
+    path('api/courses/', include('courses.urls')),
 ]
 
 if settings.DEBUG:

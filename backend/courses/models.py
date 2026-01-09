@@ -36,7 +36,9 @@ class Course(models.Model):
         on_delete=models.CASCADE,
         related_name='courses',
         verbose_name=_("Департамент"),
-        help_text=_("Департамент, к которому относится курс")
+        help_text=_("Департамент, к которому относится курс"),
+        null=True,
+        blank=True
     )
     
     created_at = models.DateTimeField(
@@ -80,12 +82,6 @@ class Module(models.Model):
         max_length=200,
         verbose_name=_("Название модуля"),
         help_text=_("Введите название модуля")
-    )
-    
-    description = models.TextField(
-        blank=True,
-        verbose_name=_("Описание модуля"),
-        help_text=_("Описание содержания модуля")
     )
     
     order = models.PositiveIntegerField(
