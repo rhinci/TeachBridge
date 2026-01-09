@@ -49,8 +49,8 @@ h2 {
 
 .input-code {
   width: 50%;
-  margin-top: 50px;
-  margin-bottom: 80px;
+  margin-top: 20px;
+  margin-bottom: 20px;
 }
 
 .form-group input.error,
@@ -81,7 +81,7 @@ h2 {
 }
 
 /* кнопки */
-.form-actions {
+.form-actions, .form-actions-forgot-password {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -90,13 +90,21 @@ h2 {
   gap: 1rem;
 }
 
-.btn-register {
+.form-actions-forgot-password {
+  margin-top: 160px;
+}
+
+.btn-register, .btn-reset {
   background-color: var(--color-primary);
   color: var(--color-text-button);
   padding: 12px 45px;
   border-radius: 20px;
   cursor: pointer;
   font-size: 16px;
+}
+
+.btn-reset {
+  margin-top: 25px;
 }
 
 .login-link {

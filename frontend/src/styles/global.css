@@ -67,6 +67,20 @@ button:hover {
   padding-left: 120px;
 }
 
+.chat-layout-container {
+  padding: 90px 20px 90px 110px;
+  min-height: calc(100vh - 90px);
+}
+
+.chat-layout {
+  border: 2px solid black;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 200px 1fr 280px;
+  gap: 16px;
+  height: 100%;
+}
+
 .header, .header-main {
   background-color: var(--color-surface);
   border-bottom: 2px solid var(--color-border);
@@ -218,7 +232,7 @@ button:hover {
 
 .main-content {
   max-width: 1000px;
-  overflow-wrap: break-word
+  overflow-wrap: break-word;
 }
 
 .custom-header {
