@@ -6,7 +6,6 @@ import ForgotPassword from './pages/ForgotPassword';
 import PersonalChats from './pages/PersonalChats';
 import Courses from './pages/Courses';
 import Profile from './pages/Profile';
-import StudyChatPage from './pages/StudyChatPage';
 import PrivateRoute from './components/PrivateRoute';
 
 function App() {
