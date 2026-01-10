@@ -63,7 +63,7 @@ class StudyGroup(models.Model):
     )
     
     def __str__(self):
-        return f"{self.code} ({self.department})"
+        return f"{self.code}"
     
     class Meta:
         verbose_name = "Учебная группа"

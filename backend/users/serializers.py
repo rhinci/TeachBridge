@@ -42,6 +42,10 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         validated_data.pop('password2')
         password = validated_data.pop('password')
+        study_group = validated_data.get('study_group')
+        
+        if study_group:
+            validated_data['department'] = study_group.department
 
         user = User(**validated_data)
         user.set_password(password)
@@ -52,7 +56,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     """Сериализатор для отображения пользователя"""
     role_display = serializers.CharField(source='get_role_display', read_only=True)
-    study_group_name = serializers.CharField(source='study_group.name', read_only=True, allow_null=True)
+    study_group_name = serializers.CharField(source='study_group.code', read_only=True, allow_null=True)
     department_name = serializers.CharField(source='department.name', read_only=True, allow_null=True)
     full_name = serializers.CharField(source='get_full_name', read_only=True)
     
