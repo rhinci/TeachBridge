@@ -10,7 +10,7 @@ class MaterialInline(admin.TabularInline):
 class ModuleInline(admin.TabularInline):
     model = Module
     extra = 1
-    fields = ['title', 'description', 'order']
+    fields = ['title','order']
     ordering = ['order']
     show_change_link = True
 
