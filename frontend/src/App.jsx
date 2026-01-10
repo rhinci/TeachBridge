@@ -6,26 +6,52 @@ import ForgotPassword from './pages/ForgotPassword';
 import PersonalChats from './pages/PersonalChats';
 import Courses from './pages/Courses';
 import Profile from './pages/Profile';
+import StudyChatPage from './pages/StudyChatPage';
+import PrivateRoute from './components/PrivateRoute';
 
 function App() {
   return (
     <Router>
       <Routes>
-
-        <Route path="/" element={<Home />} />
-        <Route path="/personalchats" element={<PersonalChats />} />
-        <Route path="/courses" element={<Courses />} />
-
-        <Route path="/profile" element={<Profile />} />
-
-        <Route path="/registration" element={<Registration />} />
+        {/* Публичные страницы */}
         <Route path="/login" element={<Login />} />
+        <Route path="/registration" element={<Registration />} />
         <Route path="/forgotpassword" element={<ForgotPassword />} />
+
+        {/* Защищённые страницы */}
+        <Route path="/" element={
+          <PrivateRoute>
+            <Home />
+          </PrivateRoute>
+        } />
+
+        <Route path="/personalchats" element={
+          <PrivateRoute>
+            <PersonalChats />
+          </PrivateRoute>
+        } />
+
+        <Route path="/courses" element={
+          <PrivateRoute>
+            <Courses />
+          </PrivateRoute>
+        } />
+
+        <Route path="/profile" element={
+          <PrivateRoute>
+            <Profile />
+          </PrivateRoute>
+        } />
+
+        <Route path="/chat" element={
+          <PrivateRoute>
+            <StudyChatPage />
+          </PrivateRoute>
+        } />
 
       </Routes>
     </Router>
-
-  )
+  );
 }
 
-export default App
+export default App;
