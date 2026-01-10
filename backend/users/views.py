@@ -94,11 +94,24 @@ class UserViewSet(viewsets.ModelViewSet):
             'access': str(refresh.access_token),
         })
     
-    @action(detail=False, methods=['get'], url_path='me')
+    @action(detail=False, methods=['get', 'patch'], url_path='me')
     def me(self, request):
-        """Получение информации о текущем пользователе"""
-        serializer = UserSerializer(request.user)
-        return Response(serializer.data)
+        """Получение или обновление данных текущего пользователя"""
+        if request.method == 'GET':
+            serializer = UserSerializer(request.user)
+            return Response(serializer.data)
+        
+        elif request.method == 'PATCH':
+            serializer = UserSerializer(
+                request.user,
+                data=request.data,
+                partial=True,
+                context={'request': request}
+            )
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     @action(detail=False, methods=['get'], url_path='study-groups')
     def study_groups(self, request):
