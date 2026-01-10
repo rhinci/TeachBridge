@@ -1,0 +1,193 @@
+/* --- Левое меню --- */
+.sidebar-left {
+  background: var(--color-surface);
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  overflow-y: auto;
+  height: fit-content;
+  max-height: calc(100vh - 120px);
+}
+
+.chat-nav-item {
+  padding: 10px 0;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.chat-nav-item:last-child {
+  border-bottom: none;
+}
+
+.chat-nav-item:hover {
+  color: var(--color-text-header);
+}
+
+/* --- Центральный чат --- */
+.chat-main {
+  background: var(--color-surface);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  overflow: hidden;
+  height: fit-content;
+  max-height: calc(100vh - 120px);
+}
+
+.chat-header {
+  padding: 12px 20px;
+  border-bottom: 2px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.chat-title {
+  font-size: 20px;
+  color: var(--color-text-header);
+  margin: 0;
+}
+
+.chat-messages {
+  flex: 1;
+  padding: 16px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 400px;
+}
+
+.message {
+  max-width: 70%;
+  padding: 10px 15px;
+  border-radius: 12px;
+  position: relative;
+}
+
+.message.outgoing {
+  background: var(--color-primary);
+  color: var(--color-text-button);
+  align-self: flex-end;
+}
+
+.message.incoming {
+  background: #e0e8f0;
+  color: var(--color-text);
+  align-self: flex-start;
+}
+
+.message-time {
+  font-size: 12px;
+  opacity: 0.8;
+  margin-top: 4px;
+  text-align: right;
+}
+
+.chat-input {
+  padding: 12px 20px;
+  border-top: 2px solid var(--color-border);
+  display: flex;
+  gap: 8px;
+}
+
+.chat-input input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 2px solid var(--color-border);
+  border-radius: 24px;
+  font-size: 14px;
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.chat-input input:focus {
+  outline: none;
+  border-color: var(--color-text-header);
+}
+
+.chat-input button {
+  padding: 8px 16px;
+  background: var(--color-primary);
+  color: var(--color-text-button);
+  border: none;
+  border-radius: 24px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.chat-input button:hover {
+  background: var(--color-button-hover);
+}
+
+/* --- Правая панель --- */
+.sidebar-right {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.participants, .courses {
+  background: var(--color-surface);
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.participants h3, .courses h3 {
+  margin: 0 0 12px 0;
+  color: var(--color-text-header);
+  font-size: 18px;
+}
+
+.participant {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.participant:last-child {
+  border-bottom: none;
+}
+
+.participant-name {
+  font-size: 14px;
+}
+
+.course-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.course-item:last-child {
+  border-bottom: none;
+}
+
+.course-icon {
+  width: 40px;
+  height: 40px;
+  background-color: var(--color-bg-text);
+  border-radius: 8px;
+}
+
+.course-info {
+  flex: 1;
+}
+
+.course-title {
+  font-weight: bold;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.course-progress {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}

@@ -5,7 +5,7 @@ const CourseComponent = () => {
   return (
     <div className='course-component'>
         <div className='course-info-container'>
-            <div className='course-icon'>
+            <div className='course-image'>
                 <img src="/src/styles/images/test1.jpg" alt="Chat icon" />
             </div>
             <div className='course-info'>
