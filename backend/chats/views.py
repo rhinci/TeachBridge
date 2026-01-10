@@ -1,4 +1,3 @@
-# backend/apps/chats/views.py
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -99,6 +98,71 @@ class ChatViewSet(viewsets.ModelViewSet):
                 {"error": "Пользователь не найден"},
                 status=status.HTTP_404_NOT_FOUND
             )
+        
+    @action(detail=True, methods=['post'])
+    def upload_avatar(self, request, pk=None):
+        """Загрузка аватарки для учебного чата"""
+        chat = self.get_object()
+        
+        # Проверяем, что чат учебный
+        if chat.chat_type != Chat.ChatType.GROUP:
+            return Response(
+                {'error': 'Аватарка доступна только для учебных чатов'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Проверяем права пользователя
+        if request.user.role not in ['teacher', 'director', 'admin']:
+            return Response(
+                {'error': 'Только преподаватели, директора и администраторы могут загружать аватарки'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        # Загружаем аватарку
+        avatar_file = request.FILES.get('avatar')
+        if not avatar_file:
+            return Response(
+                {'error': 'Файл аватарки не предоставлен'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        chat.avatar = avatar_file
+        chat.save()
+        
+        return Response({
+            'message': 'Аватарка успешно загружена',
+            'avatar_url': chat.avatar.url
+        })
+    
+    @action(detail=True, methods=['delete'])
+    def remove_avatar(self, request, pk=None):
+        """Удаление аватарки чата"""
+        chat = self.get_object()
+        
+        if chat.chat_type != Chat.ChatType.GROUP:
+            return Response(
+                {'error': 'Аватарка доступна только для учебных чатов'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        if not chat.avatar:
+            return Response(
+                {'error': 'У чата нет аватарки'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Проверяем права пользователя
+        if request.user.role not in ['teacher', 'director', 'admin']:
+            return Response(
+                {'error': 'Только преподаватели, директора и администраторы могут удалять аватарки'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        chat.avatar.delete(save=False)
+        chat.avatar = None
+        chat.save()
+        
+        return Response({'message': 'Аватарка успешно удалена'})
 
 
 class MessageViewSet(viewsets.ModelViewSet):

@@ -13,17 +13,47 @@ class ChatSerializer(serializers.ModelSerializer):
     attached_courses_info = serializers.StringRelatedField(source='attached_courses', many=True, read_only=True) # временно, пока нет сериалайзера для курсов
     last_message = serializers.SerializerMethodField()
     unread_count = serializers.SerializerMethodField()
+    avatar_url = serializers.SerializerMethodField()
+    display_avatar = serializers.SerializerMethodField()
     
     class Meta:
         model = Chat
         fields = [
-            'id', 'name', 'chat_type', 'chat_type_display', 'description',
+            'id', 'name', 'chat_type', 'chat_type_display', 'description', 'avatar', 'avatar_url', 'display_avatar',
             'department', 'created_by', 'created_by_name', 'created_at', 'updated_at',
             'teachers', 'teachers_info', 'study_groups', 'study_groups_info',
             'participants', 'participants_info', 'attached_courses', 'attached_courses_info',
             'last_message', 'unread_count'
         ]
         read_only_fields = ['created_at', 'updated_at', 'created_by']
+
+    def get_avatar_url(self, obj):
+        """Возвращает URL аватарки чата"""
+        if obj.avatar:
+            return obj.avatar.url
+        return None
+    
+    def get_display_avatar(self, obj):
+        """Возвращает отображаемую аватарку в зависимости от типа чата"""
+        if obj.chat_type == Chat.ChatType.GROUP:
+            # Для учебных чатов - аватарка чата
+            if obj.avatar:
+                return obj.avatar.url
+            else:
+                # Возвращаем дефолтную аватарку для учебного чата
+                return '/media/default_chat_avatar.png'
+        else:
+            # Для личных чатов - аватарка собеседника
+            request = self.context.get('request')
+            if request and request.user:
+                participants = obj.participants.exclude(id=request.user.id)
+                if participants.exists():
+                    participant = participants.first()
+                    if participant.photo:
+                        return participant.photo.url
+                    else:
+                        return '/media/default_user_avatar.png'
+            return '/media/default_user_avatar.png'
     
     def get_last_message(self, obj):
         """Получить последнее сообщение в чате"""

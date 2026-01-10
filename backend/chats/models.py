@@ -1,4 +1,18 @@
 from django.db import models
+from uuid import uuid4
+import os
+
+
+def chat_avatar_upload_path(instance, filename):
+    """Генерируем путь для загрузки аватарок чатов"""
+    if instance.chat_type == Chat.ChatType.GROUP:
+        # Для учебных чатов: chat_avatars/группа/{uuid}.{ext}
+        ext = filename.split('.')[-1]
+        filename = f"{uuid4()}.{ext}"
+        return os.path.join('chat_avatars', 'group', filename)
+    else:
+        # Для личных чатов аватарка не используется
+        return None
 
 class Chat(models.Model):
     """Модель чата (может быть учебным или личным)"""
@@ -23,6 +37,14 @@ class Chat(models.Model):
     description = models.TextField(
         blank=True,
         verbose_name="Описание"
+    )
+
+    avatar = models.ImageField(
+        upload_to=chat_avatar_upload_path,
+        blank=True,
+        null=True,
+        verbose_name="Аватарка чата",
+        help_text="Только для учебных чатов. Рекомендуемый размер: 200x200 пикселей"
     )
     
     # Для учебных чатов
@@ -93,7 +115,33 @@ class Chat(models.Model):
             if len(participants) == 2:
                 names = [p.get_full_name() for p in participants]
                 self.name = " - ".join(names)
+
+        # Удаляем аватарку для личных чатов
+        if self.chat_type == self.ChatType.PERSONAL:
+            if self.avatar:
+                # Удаляем файл аватарки
+                if os.path.isfile(self.avatar.path):
+                    os.remove(self.avatar.path)
+                self.avatar = None
         super().save(*args, **kwargs)
+    
+    def get_avatar_url(self):
+        """Возвращает URL аватарки чата"""
+        if self.chat_type == self.ChatType.GROUP and self.avatar:
+            return self.avatar.url
+        elif self.chat_type == self.ChatType.PERSONAL:
+            # Для личных чатов возвращаем аватарку собеседника
+            participants = self.participants.all()
+            if participants.count() == 2:
+                # Определяем собеседника (не текущего пользователя)
+                # Этот метод лучше реализовать в сериализаторе
+                return None
+        return None
+    
+    @property
+    def display_avatar_url(self):
+        """Свойство для удобного доступа к URL аватарки"""
+        return self.get_avatar_url()
 
 class Message(models.Model):
     chat = models.ForeignKey(
