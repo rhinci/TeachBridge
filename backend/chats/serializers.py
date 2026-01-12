@@ -1,7 +1,31 @@
 from rest_framework import serializers
-from .models import Chat, Message
+from .models import Chat, Message, ChatSection
 from users.serializers import UserSerializer
 # from courses.serializers import CourseSerializer
+    
+
+class ChatSectionSerializer(serializers.ModelSerializer):
+    """Сериализатор для разделов чата"""
+    created_by_name = serializers.CharField(source='created_by.get_full_name', read_only=True)
+    message_count = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = ChatSection
+        fields = ['id', 'name', 'order', 'chat', 
+                 'created_by', 'created_by_name', 'message_count',
+                 'created_at', 'updated_at']
+        read_only_fields = ['created_by', 'created_at', 'updated_at']
+    
+    def get_message_count(self, obj):
+        """Количество сообщений в разделе"""
+        return obj.messages.count()
+    
+    def create(self, validated_data):
+        """Автоматически устанавливаем создателя"""
+        validated_data['created_by'] = self.context['request'].user
+        return super().create(validated_data)
+
+
 
 class ChatSerializer(serializers.ModelSerializer):
     """Сериализатор для чатов"""
@@ -15,6 +39,8 @@ class ChatSerializer(serializers.ModelSerializer):
     unread_count = serializers.SerializerMethodField()
     avatar_url = serializers.SerializerMethodField()
     display_avatar = serializers.SerializerMethodField()
+    sections = ChatSectionSerializer(many=True, read_only=True)
+    section_count = serializers.SerializerMethodField()
     
     class Meta:
         model = Chat
@@ -23,6 +49,7 @@ class ChatSerializer(serializers.ModelSerializer):
             'department', 'created_by', 'created_by_name', 'created_at', 'updated_at',
             'teachers', 'teachers_info', 'study_groups', 'study_groups_info',
             'participants', 'participants_info', 'attached_courses', 'attached_courses_info',
+            'sections', 'section_count',
             'last_message', 'unread_count'
         ]
         read_only_fields = ['created_at', 'updated_at', 'created_by']
@@ -32,6 +59,12 @@ class ChatSerializer(serializers.ModelSerializer):
         if obj.avatar:
             return obj.avatar.url
         return None
+    
+    def get_section_count(self, obj):
+        """Количество разделов в чате (только для учебных чатов)"""
+        if obj.chat_type == Chat.ChatType.GROUP:
+            return obj.sections.count()
+        return 0
     
     def get_display_avatar(self, obj):
         """Возвращает отображаемую аватарку в зависимости от типа чата"""
@@ -124,12 +157,14 @@ class MessageSerializer(serializers.ModelSerializer):
     """Сериализатор для сообщений"""
     author_info = UserSerializer(source='author', read_only=True)
     chat_name = serializers.CharField(source='chat.name', read_only=True)
+    section_name = serializers.CharField(source='section.name', read_only=True, allow_null=True)
     parent_message_content = serializers.CharField(source='parent_message.content', read_only=True, allow_null=True)
     
     class Meta:
         model = Message
         fields = [
-            'id', 'chat', 'chat_name', 'author', 'author_info', 'content',
+            'id', 'chat', 'chat_name', 'section', 'section_name',
+            'author', 'author_info', 'content',
             'parent_message', 'parent_message_content', 'created_at'
         ]
         read_only_fields = ['author', 'created_at']
@@ -137,4 +172,17 @@ class MessageSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         """Автоматически устанавливаем автора сообщения"""
         validated_data['author'] = self.context['request'].user
+
+        if not validated_data.get('section'):
+            chat = validated_data['chat']
+            general_section = chat.sections.filter(name='#general').first()
+            if not general_section:
+                general_section = ChatSection.objects.create(
+                    chat=chat,
+                    name='#general',
+                    order=0,
+                    created_by=chat.created_by
+                )
+            validated_data['section'] = general_section
+        
         return super().create(validated_data)
