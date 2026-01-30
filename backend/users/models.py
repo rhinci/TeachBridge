@@ -9,8 +9,6 @@ from datetime import timedelta
 
 
 class UserManager(BaseUserManager):
-    """Кастомный менеджер для работы с email вместо username"""
-    
     def create_user(self, email, password=None, **extra_fields):
         if not email:
             raise ValueError('Требуется email')
@@ -143,14 +141,12 @@ class User(AbstractUser):
     REQUIRED_FIELDS = ['first_name', 'last_name', 'role']
     
     def get_full_name(self):
-        """Возвращает полное имя с отчеством."""
         full_name = f"{self.last_name} {self.first_name}"
         if self.patronymic:
             full_name += f" {self.patronymic}"
         return full_name
     
     def get_short_name(self):
-        """Возвращает короткое имя (Имя Фамилия)"""
         return f"{self.first_name} {self.last_name}"
     
     def __str__(self):
@@ -164,7 +160,6 @@ class User(AbstractUser):
 
 
 class PasswordResetCode(models.Model):
-    """Модель для кодов восстановления пароля"""
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -200,16 +195,12 @@ class PasswordResetCode(models.Model):
         return f"{self.user.email}: {self.code}"
     
     def save(self, *args, **kwargs):
-        """Генерируем код и срок действия при создании"""
-        if not self.pk:  # Если объект создаётся впервые
-            # Генерируем 6-значный код
+        if not self.pk:
             self.code = ''.join(random.choices(string.digits, k=6))
-            # Действителен 15 минут
             self.expires_at = timezone.now() + timedelta(minutes=15)
         super().save(*args, **kwargs)
     
     def is_valid(self):
-        """Проверяет, действителен ли код"""
         return (
             not self.is_used and 
             timezone.now() <= self.expires_at

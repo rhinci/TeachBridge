@@ -22,12 +22,10 @@ from .models import PasswordResetCode
 User = get_user_model()
 
 class UserViewSet(viewsets.ModelViewSet):
-    """ViewSet для управления пользователями"""
     queryset = User.objects.all().order_by('-date_joined')
     serializer_class = UserSerializer
     
     def get_permissions(self):
-        """Разные permissions для разных действий"""
         if self.action in ['register', 'login', 'study_groups', 'departments', 'password_reset_request', 'password_reset_confirm']:
             permission_classes = [permissions.AllowAny]
         elif self.action in ['retrieve', 'update', 'partial_update', 'me']:
@@ -38,7 +36,6 @@ class UserViewSet(viewsets.ModelViewSet):
     
     @action(detail=False, methods=['post'], url_path='register')
     def register(self, request):
-        """Регистрация нового пользователя"""
         serializer = UserRegistrationSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
@@ -54,7 +51,6 @@ class UserViewSet(viewsets.ModelViewSet):
     
     @action(detail=False, methods=['post'], url_path='login')
     def login(self, request):
-        """Авторизация пользователя"""
         email = request.data.get('email')
         password = request.data.get('password')
         
@@ -63,8 +59,7 @@ class UserViewSet(viewsets.ModelViewSet):
                 {'error': 'Пожалуйста, предоставьте email и пароль'},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        
-        # Аутентифицируем пользователя
+
         user = authenticate(username=email, password=password)
         
         if user is None:
@@ -85,7 +80,7 @@ class UserViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_403_FORBIDDEN
             )
         
-        # Генерируем JWT токены
+        # генерация JWT токенов
         refresh = RefreshToken.for_user(user)
         
         return Response({
@@ -96,7 +91,6 @@ class UserViewSet(viewsets.ModelViewSet):
     
     @action(detail=False, methods=['get', 'patch'], url_path='me')
     def me(self, request):
-        """Получение или обновление данных текущего пользователя"""
         if request.method == 'GET':
             serializer = UserSerializer(request.user)
             return Response(serializer.data)
@@ -115,14 +109,12 @@ class UserViewSet(viewsets.ModelViewSet):
     
     @action(detail=False, methods=['get'], url_path='study-groups')
     def study_groups(self, request):
-        """Получение списка учебных групп (для формы регистрации)"""
         groups = StudyGroup.objects.all()
         serializer = StudyGroupSerializer(groups, many=True)
         return Response(serializer.data)
     
     @action(detail=False, methods=['get'], url_path='departments')
     def departments(self, request):
-        """Получение списка департаментов"""
         departments = Department.objects.all()
         serializer = DepartmentSerializer(departments, many=True)
         return Response(serializer.data)
@@ -131,7 +123,6 @@ class UserViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['post'], url_path='password-reset/request')
     def password_reset_request(self, request):
-        """Запрос на восстановление пароля"""
         serializer = PasswordResetRequestSerializer(data=request.data)
         
         if serializer.is_valid():
@@ -140,7 +131,7 @@ class UserViewSet(viewsets.ModelViewSet):
             try:
                 user = User.objects.get(email=email)
                 
-                # Создаём новый код (старые помечаем как использованные)
+                # создаём новый код,старые помечаем как использованные
                 PasswordResetCode.objects.filter(user=user, is_used=False).update(is_used=True)
                 reset_code = PasswordResetCode.objects.create(user=user)
 
@@ -170,16 +161,14 @@ class UserViewSet(viewsets.ModelViewSet):
                     fail_silently=False,
                 )
                 
-                # Для тестирования - возвращаем код в ответе
-                # В ПРОДАКШЕНЕ ЭТО УБРАТЬ!
+                # Для тестирования возвращаем код в ответе
                 return Response({
                     'message': 'Код восстановления отправлен на вашу почту',
                     'email': user.email,
-                    'code': reset_code.code  # ТОЛЬКО ДЛЯ ТЕСТИРОВАНИЯ!
+                    'code': reset_code.code 
                 })
                 
             except User.DoesNotExist:
-                # Для безопасности не говорим, существует ли пользователь
                 return Response({
                     'message': 'Если email зарегистрирован, код будет отправлен'
                 }, status=status.HTTP_200_OK)
@@ -188,19 +177,16 @@ class UserViewSet(viewsets.ModelViewSet):
     
     @action(detail=False, methods=['post'], url_path='password-reset/confirm')
     def password_reset_confirm(self, request):
-        """Подтверждение восстановления пароля"""
         serializer = PasswordResetConfirmSerializer(data=request.data)
         
         if serializer.is_valid():
             user = serializer.validated_data['user']
             reset_code = serializer.validated_data['reset_code']
             new_password = serializer.validated_data['new_password']
-            
-            # Меняем пароль
+
             user.set_password(new_password)
             user.save()
-            
-            # Помечаем код как использованный
+
             reset_code.is_used = True
             reset_code.save()
             
@@ -212,14 +198,12 @@ class UserViewSet(viewsets.ModelViewSet):
 
 
 class StudyGroupViewSet(viewsets.ReadOnlyModelViewSet):
-    """ViewSet для учебных групп (только чтение)"""
     queryset = StudyGroup.objects.all()
     serializer_class = StudyGroupSerializer
     permission_classes = [permissions.IsAuthenticated]
 
 
 class DepartmentViewSet(viewsets.ReadOnlyModelViewSet):
-    """ViewSet для департаментов (только чтение)"""
     queryset = Department.objects.all()
     serializer_class = DepartmentSerializer
     permission_classes = [permissions.IsAuthenticated]

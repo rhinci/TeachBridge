@@ -10,16 +10,13 @@ from .serializers import (
 )
 
 class CourseViewSet(viewsets.ModelViewSet):
-    """ViewSet для управления курсами"""
     
     def get_serializer_class(self):
-        """Выбираем сериализатор в зависимости от действия"""
         if self.action == 'create':
             return CourseCreateSerializer
         return CourseSerializer
     
     def get_permissions(self):
-        """Права доступа в зависимости от действия"""
         if self.action in ['list', 'retrieve', 'my_courses']:
             permission_classes = [permissions.IsAuthenticated]
         elif self.action == 'create':
@@ -33,7 +30,6 @@ class CourseViewSet(viewsets.ModelViewSet):
         return [permission() for permission in permission_classes]
     
     def get_queryset(self):
-        """Разные queryset в зависимости от роли и action"""
         user = self.request.user
         
         if self.action == 'my_courses':
@@ -45,8 +41,7 @@ class CourseViewSet(viewsets.ModelViewSet):
             else:
                 # Преподаватель/директор/админ: их собственные курсы
                 return Course.objects.filter(author=user)
-        
-        # Для обычного list: все курсы (с фильтрацией по правам)
+
         if user.role == 'admin':
             return Course.objects.all()
         elif user.role == 'director':
@@ -66,22 +61,19 @@ class CourseViewSet(viewsets.ModelViewSet):
         return Course.objects.none()
     
     def perform_create(self, serializer):
-        """Автоматически устанавливаем автора"""
         serializer.save(author=self.request.user, department=self.request.user.department)
     
     @action(detail=False, methods=['get'], url_path='my-courses')
     def my_courses(self, request):
-        """Получить "мои курсы" в зависимости от роли"""
         courses = self.get_queryset()
         serializer = self.get_serializer(courses, many=True)
         return Response(serializer.data)
     
     @action(detail=True, methods=['post'], url_path='add-module')
     def add_module(self, request, pk=None):
-        """Добавить модуль в курс"""
         course = self.get_object()
         
-        # Проверяем, что пользователь - автор курса
+        # Проверяем, что пользователь автор курса
         if course.author != request.user and request.user.role not in ['admin', 'director']:
             return Response(
                 {'error': 'Вы не можете добавлять модули в этот курс'},
@@ -101,10 +93,8 @@ class CourseViewSet(viewsets.ModelViewSet):
     
     @action(detail=True, methods=['post'], url_path='modules/(?P<module_id>[^/.]+)/add-material')
     def add_material(self, request, pk=None, module_id=None):
-        """Добавить материал в модуль"""
         course = self.get_object()
-        
-        # Проверяем, что пользователь - автор курса
+
         if course.author != request.user and request.user.role not in ['admin', 'director']:
             return Response(
                 {'error': 'Вы не можете добавлять материалы в этот курс'},
@@ -132,13 +122,11 @@ class CourseViewSet(viewsets.ModelViewSet):
 
 
 class ModuleViewSet(viewsets.ModelViewSet):
-    """ViewSet для модулей (только удаление)"""
     queryset = Module.objects.all()
     serializer_class = ModuleSerializer
     permission_classes = [permissions.IsAuthenticated]
     
     def destroy(self, request, *args, **kwargs):
-        """Удаление модуля (только автор курса)"""
         module = self.get_object()
         
         if module.course.author != request.user and request.user.role not in ['admin', 'director']:
@@ -151,13 +139,11 @@ class ModuleViewSet(viewsets.ModelViewSet):
 
 
 class MaterialViewSet(viewsets.ModelViewSet):
-    """ViewSet для материалов (только удаление)"""
     queryset = Material.objects.all()
     serializer_class = MaterialCreateSerializer
     permission_classes = [permissions.IsAuthenticated]
     
     def destroy(self, request, *args, **kwargs):
-        """Удаление материала (только автор курса)"""
         material = self.get_object()
         
         if material.module.course.author != request.user and request.user.role not in ['admin', 'director']:

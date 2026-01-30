@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'courses',
     'chats',
     'notifications',
+    'director',
 
     'rest_framework',
     'corsheaders',

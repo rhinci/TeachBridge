@@ -1,4 +1,3 @@
-# backend/apps/courses/serializers.py
 from rest_framework import serializers
 from .models import Course, Module, Material
 from users.serializers import UserSerializer
@@ -52,13 +51,11 @@ class CourseSerializer(serializers.ModelSerializer):
 
 
 class CourseCreateSerializer(serializers.ModelSerializer):
-    """Сериализатор для создания курса (только основные поля)"""
     class Meta:
         model = Course
         fields = ['title', 'short_description', 'full_description']
     
     def create(self, validated_data):
-        """Автоматически устанавливаем автора и департамент"""
         request = self.context.get('request')
         validated_data['author'] = request.user
         validated_data['department'] = request.user.department
@@ -66,13 +63,11 @@ class CourseCreateSerializer(serializers.ModelSerializer):
 
 
 class ModuleCreateSerializer(serializers.ModelSerializer):
-    """Сериализатор для создания модуля (только название)"""
     class Meta:
         model = Module
         fields = ['title']
     
     def create(self, validated_data):
-        """Автоматически устанавливаем курс и порядок"""
         course_id = self.context.get('course_id')
         validated_data['course_id'] = course_id
         
@@ -84,13 +79,12 @@ class ModuleCreateSerializer(serializers.ModelSerializer):
 
 
 class MaterialCreateSerializer(serializers.ModelSerializer):
-    """Сериализатор для создания материала"""
     class Meta:
         model = Material
         fields = ['title', 'material_type', 'file']
     
     def create(self, validated_data):
-        """Автоматически определяем тип файла по расширению"""
+        #Автоматически определяем тип файла по расширению
         module_id = self.context.get('module_id')
         validated_data['module_id'] = module_id
         

@@ -4,7 +4,6 @@ import os
 
 
 def chat_avatar_upload_path(instance, filename):
-    """Генерируем путь для загрузки аватарок чатов"""
     if instance.chat_type == Chat.ChatType.GROUP:
         # Для учебных чатов: chat_avatars/группа/{uuid}.{ext}
         ext = filename.split('.')[-1]
@@ -15,7 +14,6 @@ def chat_avatar_upload_path(instance, filename):
         return None
 
 class Chat(models.Model):
-    """Модель чата (может быть учебным или личным)"""
     
     class ChatType(models.TextChoices):
         GROUP = 'group', 'Учебный чат'
@@ -109,7 +107,6 @@ class Chat(models.Model):
         return f"{self.name} ({self.get_chat_type_display()})"
     
     def save(self, *args, **kwargs):
-        """Автоматически генерируем название для личных чатов"""
         if self.chat_type == self.ChatType.PERSONAL and not self.name:
             # Название как "User1 - User2"
             participants = list(self.participants.all())
@@ -120,7 +117,6 @@ class Chat(models.Model):
         # Удаляем аватарку для личных чатов
         if self.chat_type == self.ChatType.PERSONAL:
             if self.avatar:
-                # Удаляем файл аватарки
                 if os.path.isfile(self.avatar.path):
                     os.remove(self.avatar.path)
                 self.avatar = None
@@ -133,11 +129,9 @@ class Chat(models.Model):
             self._sync_participants_from_groups()
 
     def _sync_participants_from_groups(self):
-        """Автоматически добавляет участников из выбранных учебных групп"""
         if not self.study_groups.exists():
             return
         
-        # Получаем всех студентов из выбранных групп
         from users.models import User
         students = User.objects.filter(
             study_group__in=self.study_groups.all(),
@@ -161,10 +155,8 @@ class Chat(models.Model):
             self.participants.add(self.created_by)
 
     def _create_default_section(self):
-        """Создает стандартный раздел #general для учебного чата"""
         from .models import ChatSection
-        
-        # Проверяем, нет ли уже раздела #general
+
         if not self.sections.filter(name='#general').exists():
             ChatSection.objects.create(
                 chat=self,
@@ -174,21 +166,17 @@ class Chat(models.Model):
             )
 
     def get_avatar_url(self):
-        """Возвращает URL аватарки чата"""
         if self.chat_type == self.ChatType.GROUP and self.avatar:
             return self.avatar.url
         elif self.chat_type == self.ChatType.PERSONAL:
             # Для личных чатов возвращаем аватарку собеседника
             participants = self.participants.all()
             if participants.count() == 2:
-                # Определяем собеседника (не текущего пользователя)
-                # Этот метод лучше реализовать в сериализаторе
                 return None
         return None
     
     @property
     def display_avatar_url(self):
-        """Свойство для удобного доступа к URL аватарки"""
         return self.get_avatar_url()
 
 class Message(models.Model):
@@ -238,9 +226,7 @@ class Message(models.Model):
         return f"{self.author}: {self.content[:50]}..."
     
     def save(self, *args, **kwargs):
-        """Проверяем, что раздел принадлежит тому же чату"""
         if not self.section_id and self.chat_id:
-            # Находим или создаем раздел #general для этого чата
             general_section = self.chat.sections.filter(name='#general').first()
             if not general_section:
                 general_section = ChatSection.objects.create(
@@ -257,7 +243,6 @@ class Message(models.Model):
     
 
 class ChatSection(models.Model):
-    """Модель для разделов/подразделов внутри учебного чата"""
     chat = models.ForeignKey(
         Chat,
         on_delete=models.CASCADE,
@@ -284,7 +269,7 @@ class ChatSection(models.Model):
         verbose_name = "Раздел чата"
         verbose_name_plural = "Разделы чатов"
         ordering = ['order', 'created_at']
-        unique_together = ['chat', 'name']  # Имя раздела уникально в рамках чата
+        unique_together = ['chat', 'name']
     
     def __str__(self):
         return f"{self.name} ({self.chat.name})"

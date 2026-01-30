@@ -17,7 +17,6 @@ class StudyGroupAdmin(admin.ModelAdmin):
     search_fields = ('name', 'code')
 
 class CustomUserCreationForm(UserCreationForm):
-    """Форма для создания пользователя в админке"""
     class Meta:
         model = User
         fields = ('email', 'first_name', 'last_name', 'patronymic', 
@@ -25,20 +24,16 @@ class CustomUserCreationForm(UserCreationForm):
 
 
 class CustomUserChangeForm(UserChangeForm):
-    """Форма для редактирования пользователя в админке"""
     class Meta:
         model = User
         fields = '__all__'
 
 class CustomUserAdmin(UserAdmin):
-    """Кастомный админ для пользователей"""
-    
-    # Поля для отображения в списке
+
     list_display = ('email', 'get_full_name', 'role', 'is_approved', 'is_active')
     list_filter = ('role', 'is_approved', 'is_active', 'department')
     search_fields = ('email', 'first_name', 'last_name', 'patronymic')
-    
-    # Порядок полей в форме
+
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
         (_('Персональная информация'), {
@@ -54,8 +49,7 @@ class CustomUserAdmin(UserAdmin):
             'fields': ('last_login', 'date_joined')
         }),
     )
-    
-    # Поля при создании пользователя
+
     add_fieldsets = (
         (None, {
             'classes': ('wide',),

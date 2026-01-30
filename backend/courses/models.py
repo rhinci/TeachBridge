@@ -94,13 +94,12 @@ class Module(models.Model):
         verbose_name = _("Модуль курса")
         verbose_name_plural = _("Модули курса")
         ordering = ['order', 'id']
-        unique_together = ['course', 'order']  # Порядок уникален в рамках курса
+        unique_together = ['course', 'order']
         
     def __str__(self):
         return f"{self.order}. {self.title} ({self.course.title})"
     
     def save(self, *args, **kwargs):
-        # При сохранении нового модуля без указания порядка ставим его последним
         if not self.pk and self.order == 0:
             last_module = Module.objects.filter(course=self.course).order_by('-order').first()
             self.order = last_module.order + 1 if last_module else 1

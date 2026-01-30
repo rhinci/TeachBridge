@@ -6,7 +6,6 @@ from .models import Department, StudyGroup, PasswordResetCode
 User = get_user_model()
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
-    """Сериализатор для регистрации пользователя"""
     password = serializers.CharField(write_only=True, required=True)
     password2 = serializers.CharField(write_only=True, required=True)
     
@@ -54,7 +53,6 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-    """Сериализатор для отображения пользователя"""
     role_display = serializers.CharField(source='get_role_display', read_only=True)
     study_group_name = serializers.CharField(source='study_group.code', read_only=True, allow_null=True)
     department_name = serializers.CharField(source='department.name', read_only=True, allow_null=True)
@@ -84,15 +82,12 @@ class DepartmentSerializer(serializers.ModelSerializer):
 
 
 class PasswordResetRequestSerializer(serializers.Serializer):
-    """Сериализатор для запроса восстановления пароля"""
     email = serializers.EmailField(required=True)
     
     def validate_email(self, value):
-        """Проверяем, есть ли пользователь с таким email"""
         if not User.objects.filter(email=value).exists():
             raise serializers.ValidationError("Пользователь с таким email не найден")
-        
-        # Проверяем домен ДВФУ (опционально)
+
         if not value.endswith('@dvfu.ru'):
             raise serializers.ValidationError("Используйте корпоративную почту ДВФУ")
         
@@ -100,25 +95,19 @@ class PasswordResetRequestSerializer(serializers.Serializer):
 
 
 class PasswordResetConfirmSerializer(serializers.Serializer):
-    """Сериализатор для подтверждения сброса пароля"""
     email = serializers.EmailField(required=True)
     code = serializers.CharField(min_length=6, max_length=6, required=True)
     new_password = serializers.CharField(write_only=True, required=True)
     new_password2 = serializers.CharField(write_only=True, required=True)
     
     def validate(self, data):
-        """Валидация данных"""
-        # Проверяем совпадение паролей
         if data['new_password'] != data['new_password2']:
             raise serializers.ValidationError({"new_password": "Пароли не совпадают"})
-        
-        # Проверяем пользователя
         try:
             user = User.objects.get(email=data['email'])
         except User.DoesNotExist:
             raise serializers.ValidationError({"email": "Пользователь не найден"})
-        
-        # Проверяем код
+
         try:
             reset_code = PasswordResetCode.objects.get(
                 user=user,

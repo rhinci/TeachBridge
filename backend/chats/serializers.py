@@ -1,11 +1,9 @@
 from rest_framework import serializers
 from .models import Chat, Message, ChatSection
 from users.serializers import UserSerializer
-# from courses.serializers import CourseSerializer
     
 
 class ChatSectionSerializer(serializers.ModelSerializer):
-    """Сериализатор для разделов чата"""
     created_by_name = serializers.CharField(source='created_by.get_full_name', read_only=True)
     message_count = serializers.SerializerMethodField()
     
@@ -17,18 +15,15 @@ class ChatSectionSerializer(serializers.ModelSerializer):
         read_only_fields = ['created_by', 'created_at', 'updated_at']
     
     def get_message_count(self, obj):
-        """Количество сообщений в разделе"""
         return obj.messages.count()
     
     def create(self, validated_data):
-        """Автоматически устанавливаем создателя"""
         validated_data['created_by'] = self.context['request'].user
         return super().create(validated_data)
 
 
 
 class ChatSerializer(serializers.ModelSerializer):
-    """Сериализатор для чатов"""
     chat_type_display = serializers.CharField(source='get_chat_type_display', read_only=True)
     created_by_name = serializers.CharField(source='created_by.get_full_name', read_only=True)
     participants_info = UserSerializer(source='participants', many=True, read_only=True)
@@ -55,28 +50,22 @@ class ChatSerializer(serializers.ModelSerializer):
         read_only_fields = ['created_at', 'updated_at', 'created_by']
 
     def get_avatar_url(self, obj):
-        """Возвращает URL аватарки чата"""
         if obj.avatar:
             return obj.avatar.url
         return None
     
     def get_section_count(self, obj):
-        """Количество разделов в чате (только для учебных чатов)"""
         if obj.chat_type == Chat.ChatType.GROUP:
             return obj.sections.count()
         return 0
     
     def get_display_avatar(self, obj):
-        """Возвращает отображаемую аватарку в зависимости от типа чата"""
         if obj.chat_type == Chat.ChatType.GROUP:
-            # Для учебных чатов - аватарка чата
             if obj.avatar:
                 return obj.avatar.url
             else:
-                # Возвращаем дефолтную аватарку для учебного чата
                 return '/media/default_chat_avatar.png'
         else:
-            # Для личных чатов - аватарка собеседника
             request = self.context.get('request')
             if request and request.user:
                 participants = obj.participants.exclude(id=request.user.id)
@@ -89,7 +78,6 @@ class ChatSerializer(serializers.ModelSerializer):
             return '/media/default_user_avatar.png'
     
     def get_last_message(self, obj):
-        """Получить последнее сообщение в чате"""
         last_msg = obj.messages.order_by('-created_at').first()
         if last_msg:
             return {
@@ -100,31 +88,25 @@ class ChatSerializer(serializers.ModelSerializer):
         return None
     
     def get_unread_count(self, obj):
-        """Получить количество непрочитанных сообщений (пока заглушка)"""
         request = self.context.get('request')
         if request and request.user.is_authenticated:
-            # Здесь позже добавим логику подсчёта непрочитанных
             return 0
         return 0
     
     def validate(self, data):
-        """Валидация данных в зависимости от типа чата"""
         chat_type = data.get('chat_type', self.instance.chat_type if self.instance else None)
         
         if chat_type == Chat.ChatType.GROUP:
-            # Учебный чат должен иметь департамент
             if not data.get('department'):
                 raise serializers.ValidationError({
                     "department": "Учебный чат должен иметь департамент"
                 })
-            # Учебный чат должен иметь хотя бы одну группу или преподавателя
             if not data.get('study_groups') and not data.get('teachers'):
                 raise serializers.ValidationError({
                     "detail": "Учебный чат должен иметь хотя бы одну учебную группу или преподавателя"
                 })
         
         elif chat_type == Chat.ChatType.PERSONAL:
-            # Личный чат должен иметь участников (2 человека)
             participants = data.get('participants', [])
             if len(participants) != 2:
                 raise serializers.ValidationError({
@@ -141,7 +123,6 @@ class ChatSerializer(serializers.ModelSerializer):
     unread_count = serializers.SerializerMethodField()
     
     def get_unread_count(self, obj):
-        """Количество непрочитанных сообщений в чате"""
         request = self.context.get('request')
         if request and request.user.is_authenticated:
             from notifications.models import Notification
@@ -154,7 +135,6 @@ class ChatSerializer(serializers.ModelSerializer):
 
 
 class MessageSerializer(serializers.ModelSerializer):
-    """Сериализатор для сообщений"""
     author_info = UserSerializer(source='author', read_only=True)
     chat_name = serializers.CharField(source='chat.name', read_only=True)
     section_name = serializers.CharField(source='section.name', read_only=True, allow_null=True)
@@ -170,7 +150,6 @@ class MessageSerializer(serializers.ModelSerializer):
         read_only_fields = ['author', 'created_at']
     
     def create(self, validated_data):
-        """Автоматически устанавливаем автора сообщения"""
         validated_data['author'] = self.context['request'].user
 
         if not validated_data.get('section'):

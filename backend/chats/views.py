@@ -9,12 +9,10 @@ from .serializers import ChatSerializer, MessageSerializer, ChatSectionSerialize
 from users.models import User
 
 class ChatViewSet(viewsets.ModelViewSet):
-    """ViewSet для управления чатами"""
     serializer_class = ChatSerializer
     permission_classes = [permissions.IsAuthenticated]
     
     def get_queryset(self):
-        """Пользователь видит только свои чаты"""
         user = self.request.user
         
         if user.role == 'admin':
@@ -46,10 +44,8 @@ class ChatViewSet(viewsets.ModelViewSet):
         return Chat.objects.none()
     
     def perform_create(self, serializer):
-        """Автоматически устанавливаем создателя чата и создаем раздел #general для учебных чатов"""
         chat = serializer.save(created_by=self.request.user)
-        
-        # Автоматически создаем раздел #general для учебных чатов
+
         if chat.chat_type == Chat.ChatType.GROUP:
             ChatSection.objects.create(
                 chat=chat,
@@ -61,21 +57,18 @@ class ChatViewSet(viewsets.ModelViewSet):
     
     @action(detail=False, methods=['get'])
     def group_chats(self, request):
-        """Получить только учебные чаты"""
         chats = self.get_queryset().filter(chat_type=Chat.ChatType.GROUP)
         serializer = self.get_serializer(chats, many=True)
         return Response(serializer.data)
     
     @action(detail=False, methods=['get'])
     def personal_chats(self, request):
-        """Получить только личные чаты"""
         chats = self.get_queryset().filter(chat_type=Chat.ChatType.PERSONAL)
         serializer = self.get_serializer(chats, many=True)
         return Response(serializer.data)
         
     @action(detail=False, methods=['post'], url_path='create-personal')
     def create_personal_chat(self, request):
-        """Создать личный чат с пользователем"""
         user_id = request.data.get('user_id')
         
         if not user_id:
@@ -86,8 +79,7 @@ class ChatViewSet(viewsets.ModelViewSet):
         
         try:
             other_user = User.objects.get(id=user_id)
-            
-            # Проверяем, нет ли уже личного чата
+
             existing_chat = Chat.objects.filter(
                 chat_type=Chat.ChatType.PERSONAL,
                 participants=request.user
@@ -95,8 +87,7 @@ class ChatViewSet(viewsets.ModelViewSet):
             
             if existing_chat:
                 return Response(ChatSerializer(existing_chat).data)
-            
-            # Создаём новый
+
             chat = Chat.objects.create(
                 chat_type=Chat.ChatType.PERSONAL,
                 created_by=request.user
@@ -113,7 +104,6 @@ class ChatViewSet(viewsets.ModelViewSet):
     
     @action(detail=True, methods=['get'])
     def sections(self, request, pk=None):
-        """Получить все разделы чата"""
         chat = self.get_object()
         sections = chat.sections.all().order_by('order')
         serializer = ChatSectionSerializer(sections, many=True, context={'request': request})
@@ -121,17 +111,14 @@ class ChatViewSet(viewsets.ModelViewSet):
     
     @action(detail=True, methods=['post'])
     def create_section(self, request, pk=None):
-        """Создать новый раздел в чате"""
         chat = self.get_object()
-        
-        # Проверяем, что чат учебный
+
         if chat.chat_type != Chat.ChatType.GROUP:
             return Response(
                 {'error': 'Разделы доступны только для учебных чатов'},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        
-        # Проверяем права
+
         if request.user not in [chat.created_by] + list(chat.teachers.all()):
             if request.user.role not in ['teacher', 'director', 'admin']:
                 return Response(
@@ -147,24 +134,20 @@ class ChatViewSet(viewsets.ModelViewSet):
     
     @action(detail=True, methods=['post'])
     def upload_avatar(self, request, pk=None):
-        """Загрузка аватарки для учебного чата"""
         chat = self.get_object()
-        
-        # Проверяем, что чат учебный
+
         if chat.chat_type != Chat.ChatType.GROUP:
             return Response(
                 {'error': 'Аватарка доступна только для учебных чатов'},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        
-        # Проверяем права пользователя
+
         if request.user.role not in ['teacher', 'director', 'admin']:
             return Response(
                 {'error': 'Только преподаватели, директора и администраторы могут загружать аватарки'},
                 status=status.HTTP_403_FORBIDDEN
             )
-        
-        # Загружаем аватарку
+
         avatar_file = request.FILES.get('avatar')
         if not avatar_file:
             return Response(
@@ -182,7 +165,6 @@ class ChatViewSet(viewsets.ModelViewSet):
     
     @action(detail=True, methods=['delete'])
     def remove_avatar(self, request, pk=None):
-        """Удаление аватарки чата"""
         chat = self.get_object()
         
         if chat.chat_type != Chat.ChatType.GROUP:
@@ -196,8 +178,7 @@ class ChatViewSet(viewsets.ModelViewSet):
                 {'error': 'У чата нет аватарки'},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        
-        # Проверяем права пользователя
+
         if request.user.role not in ['teacher', 'director', 'admin']:
             return Response(
                 {'error': 'Только преподаватели, директора и администраторы могут удалять аватарки'},
@@ -212,13 +193,11 @@ class ChatViewSet(viewsets.ModelViewSet):
     
 
 class ChatSectionViewSet(viewsets.ModelViewSet):
-    """API для разделов чатов"""
     serializer_class = ChatSectionSerializer
     permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
         user = self.request.user
-        # Только разделы чатов, доступных пользователю
         return ChatSection.objects.filter(
             chat__in=Chat.objects.filter(
                 Q(participants=user) |
@@ -229,14 +208,11 @@ class ChatSectionViewSet(viewsets.ModelViewSet):
         )
     
     def perform_create(self, serializer):
-        """Проверяем права на создание разделов"""
         chat = serializer.validated_data['chat']
-        
-        # Проверяем, что чат учебный
+
         if chat.chat_type != Chat.ChatType.GROUP:
             raise PermissionDenied("Разделы доступны только для учебных чатов")
-        
-        # Только преподаватели, директора и создатель чата могут создавать разделы
+
         if self.request.user not in [chat.created_by] + list(chat.teachers.all()):
             if self.request.user.role not in ['teacher', 'director', 'admin']:
                 raise PermissionDenied("Недостаточно прав для создания разделов")
@@ -245,12 +221,10 @@ class ChatSectionViewSet(viewsets.ModelViewSet):
 
 
 class MessageViewSet(viewsets.ModelViewSet):
-    """ViewSet для сообщений"""
     serializer_class = MessageSerializer
     permission_classes = [permissions.IsAuthenticated]
     
     def get_queryset(self):
-        """Пользователь видит сообщения только из своих чатов"""
         user = self.request.user
         user_chats = Chat.objects.filter(
             Q(study_groups=user.study_group) | 
@@ -262,16 +236,13 @@ class MessageViewSet(viewsets.ModelViewSet):
         return Message.objects.filter(chat__in=user_chats).order_by('created_at')
     
     def perform_create(self, serializer):
-        """Автоматически устанавливаем автора и привязываем к разделу #general, если не указан"""
         validated_data = serializer.validated_data
-        
-        # Если раздел не указан, находим #general для этого чата
+
         if not validated_data.get('section'):
             chat = validated_data['chat']
             general_section = chat.sections.filter(name='#general').first()
             
             if not general_section:
-                # Создаем раздел #general если его почему-то нет
                 general_section = ChatSection.objects.create(
                     chat=chat,
                     name='#general',
@@ -286,7 +257,6 @@ class MessageViewSet(viewsets.ModelViewSet):
     
     @action(detail=False, methods=['get'])
     def chat_messages(self, request):
-        """Получить сообщения конкретного чата"""
         chat_id = request.query_params.get('chat_id')
         section_id = request.query_params.get('section_id')
         
@@ -295,11 +265,9 @@ class MessageViewSet(viewsets.ModelViewSet):
                 {"error": "Не указан chat_id"},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        
-        # Базовый запрос для сообщений чата
+
         messages = self.get_queryset().filter(chat_id=chat_id)
-        
-        # Если указан раздел - фильтруем по нему
+
         if section_id:
             messages = messages.filter(section_id=section_id)
         
@@ -307,7 +275,6 @@ class MessageViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
     
     def get_serializer_context(self):
-        """Добавляем request в контекст сериализатора"""
         context = super().get_serializer_context()
         context['request'] = self.request
         return context

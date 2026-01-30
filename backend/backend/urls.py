@@ -93,6 +93,7 @@ urlpatterns = [
     path('api/chats/', include('chats.urls')),
     path('api/courses/', include('courses.urls')),
     path('api/notifications/', include('notifications.urls')),
+    path('api/director/', include('director.urls')),
 ]
 
 if settings.DEBUG:

@@ -4,15 +4,13 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 class Notification(models.Model):
-    """Простая модель уведомления"""
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
         related_name='notifications',
         verbose_name="Пользователь"
     )
-    
-    # Типы уведомлений
+
     NOTIFICATION_TYPES = [
         ('new_chat', 'Добавлен в чат'),
         ('new_course_material', 'Новый материал в курсе'),
@@ -30,8 +28,7 @@ class Notification(models.Model):
     
     title = models.CharField(max_length=200, verbose_name="Заголовок")
     message = models.TextField(verbose_name="Сообщение")
-    
-    # Ссылка на связанный объект (опционально)
+
     related_chat_id = models.PositiveIntegerField(null=True, blank=True)
     related_course_id = models.PositiveIntegerField(null=True, blank=True)
     
