@@ -4,8 +4,8 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     volumes:
-      - ./backend:/app  # Монтируем код для hot reload
-      - ./backend/media:/app/media  # Для файлов
+      - ./backend:/app  #код для hot reload
+      - ./backend/media:/app/media  #для файлов
     ports:
       - "8000:8000"
     environment:
@@ -18,8 +18,8 @@ services:
       context: ./frontend
       dockerfile: Dockerfile.dev
     volumes:
-      - ./frontend:/app  # Монтируем для hot reload
-      - /app/node_modules  # Исключаем node_modules
+      - ./frontend:/app  # для hot reload
+      - /app/node_modules 
     ports:
       - "3000:3000"
     environment:
