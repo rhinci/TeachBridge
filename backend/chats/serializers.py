@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Chat, Message, ChatSection
+from .models import Chat, Message, ChatSection, MessageAttachment
 from users.serializers import UserSerializer
     
 
@@ -134,24 +134,53 @@ class ChatSerializer(serializers.ModelSerializer):
         return 0
 
 
+class MessageAttachmentSerializer(serializers.ModelSerializer):
+    file_url = serializers.SerializerMethodField()
+    human_file_size = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = MessageAttachment
+        fields = [
+            'id', 'file', 'file_url', 'original_filename', 
+            'file_type', 'file_size', 'human_file_size', 
+            'uploaded_at'
+        ]
+        read_only_fields = ['id', 'file_type', 'file_size', 'human_file_size', 'uploaded_at']
+    
+    def get_file_url(self, obj):
+        """URL для скачивания файла"""
+        if obj.file:
+            return obj.file.url
+        return None
+    
+    def get_human_file_size(self, obj):
+        """Человеко-читаемый размер файла"""
+        return obj.human_file_size
+
+
 class MessageSerializer(serializers.ModelSerializer):
+    """Сериализатор для сообщений (обновленный)"""
     author_info = UserSerializer(source='author', read_only=True)
     chat_name = serializers.CharField(source='chat.name', read_only=True)
     section_name = serializers.CharField(source='section.name', read_only=True, allow_null=True)
     parent_message_content = serializers.CharField(source='parent_message.content', read_only=True, allow_null=True)
+    attachments = MessageAttachmentSerializer(many=True, read_only=True)
+    has_attachments = serializers.BooleanField(read_only=True)
     
     class Meta:
         model = Message
         fields = [
             'id', 'chat', 'chat_name', 'section', 'section_name',
             'author', 'author_info', 'content',
-            'parent_message', 'parent_message_content', 'created_at'
+            'parent_message', 'parent_message_content',
+            'attachments', 'has_attachments', 'created_at'
         ]
-        read_only_fields = ['author', 'created_at']
+        read_only_fields = ['author', 'created_at', 'has_attachments']
     
     def create(self, validated_data):
         validated_data['author'] = self.context['request'].user
-
+        
+        # Если раздел не указан, находим #general для этого чата
         if not validated_data.get('section'):
             chat = validated_data['chat']
             general_section = chat.sections.filter(name='#general').first()
@@ -159,9 +188,79 @@ class MessageSerializer(serializers.ModelSerializer):
                 general_section = ChatSection.objects.create(
                     chat=chat,
                     name='#general',
+                    description='Основной раздел для общего обсуждения',
                     order=0,
                     created_by=chat.created_by
                 )
             validated_data['section'] = general_section
         
         return super().create(validated_data)
+    
+
+
+
+class MessageCreateSerializer(serializers.ModelSerializer):
+    attachments = serializers.ListField(
+        child=serializers.FileField(max_length=100),
+        write_only=True,
+        required=False
+    )
+    
+    class Meta:
+        model = Message
+        fields = ['chat', 'section', 'content', 'parent_message', 'attachments']
+    
+    def validate(self, data):
+        request = self.context.get('request')
+
+        chat = data.get('chat')
+        if chat and request.user:
+            if not chat.participants.filter(id=request.user.id).exists():
+                if request.user not in chat.teachers.all():
+                    if not (request.user.study_group and request.user.study_group in chat.study_groups.all()):
+                        raise serializers.ValidationError(
+                            "У вас нет доступа к этому чату"
+                        )
+        
+        # Проверяем размер файлов
+        attachments = data.get('attachments', [])
+        for attachment in attachments:
+            if attachment.size > 50 * 1024 * 1024:  # 50MB max
+                raise serializers.ValidationError(
+                    f"Файл {attachment.name} слишком большой. Максимальный размер: 50MB"
+                )
+        
+        return data
+    
+    def create(self, validated_data):
+        attachments = validated_data.pop('attachments', [])
+        
+        # Создаем сообщение
+        validated_data['author'] = self.context['request'].user
+        
+        # Если раздел не указан, находим #general для этого чата
+        if not validated_data.get('section'):
+            chat = validated_data['chat']
+            general_section = chat.sections.filter(name='#general').first()
+            if not general_section:
+                general_section = ChatSection.objects.create(
+                    chat=chat,
+                    name='#general',
+                    description='Основной раздел для общего обсуждения',
+                    order=0,
+                    created_by=chat.created_by
+                )
+            validated_data['section'] = general_section
+        
+        message = Message.objects.create(**validated_data)
+        
+        # Прикрепляем файлы
+        for attachment_file in attachments:
+            MessageAttachment.objects.create(
+                message=message,
+                file=attachment_file,
+                original_filename=attachment_file.name
+            )
+        
+        return message
+

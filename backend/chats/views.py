@@ -4,9 +4,10 @@ from rest_framework.response import Response
 from django.db.models import Q
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import PermissionDenied
-from .models import Chat, Message, ChatSection
-from .serializers import ChatSerializer, MessageSerializer, ChatSectionSerializer
+from .models import Chat, Message, ChatSection, MessageAttachment
+from .serializers import ChatSerializer, MessageSerializer, ChatSectionSerializer, MessageAttachmentSerializer, MessageCreateSerializer
 from users.models import User
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 
 class ChatViewSet(viewsets.ModelViewSet):
     serializer_class = ChatSerializer
@@ -221,8 +222,15 @@ class ChatSectionViewSet(viewsets.ModelViewSet):
 
 
 class MessageViewSet(viewsets.ModelViewSet):
+    """ViewSet для сообщений (обновленный)"""
     serializer_class = MessageSerializer
     permission_classes = [permissions.IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]  # Добавляем поддержку multipart
+    
+    def get_serializer_class(self):
+        if self.action in ['create', 'update', 'partial_update']:
+            return MessageCreateSerializer
+        return MessageSerializer
     
     def get_queryset(self):
         user = self.request.user
@@ -236,23 +244,6 @@ class MessageViewSet(viewsets.ModelViewSet):
         return Message.objects.filter(chat__in=user_chats).order_by('created_at')
     
     def perform_create(self, serializer):
-        validated_data = serializer.validated_data
-
-        if not validated_data.get('section'):
-            chat = validated_data['chat']
-            general_section = chat.sections.filter(name='#general').first()
-            
-            if not general_section:
-                general_section = ChatSection.objects.create(
-                    chat=chat,
-                    name='#general',
-                    description='Основной раздел для общего обсуждения',
-                    order=0,
-                    created_by=chat.created_by
-                )
-            
-            serializer.validated_data['section'] = general_section
-        
         serializer.save(author=self.request.user)
     
     @action(detail=False, methods=['get'])
@@ -266,15 +257,122 @@ class MessageViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
+        try:
+            chat = Chat.objects.get(id=chat_id)
+            if not self._has_chat_access(request.user, chat):
+                return Response(
+                    {"error": "У вас нет доступа к этому чату"},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+        except Chat.DoesNotExist:
+            return Response(
+                {"error": "Чат не найден"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        # Базовый запрос для сообщений чата
         messages = self.get_queryset().filter(chat_id=chat_id)
-
+        
+        # Если указан раздел - фильтруем по нему
         if section_id:
             messages = messages.filter(section_id=section_id)
         
         serializer = self.get_serializer(messages, many=True)
         return Response(serializer.data)
     
+    @action(detail=True, methods=['post'])
+    def attach_file(self, request, pk=None):
+        message = self.get_object()
+        
+        # Проверяем, что пользователь является автором сообщения
+        if message.author != request.user:
+            return Response(
+                {"error": "Вы можете прикреплять файлы только к своим сообщениям"},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        file = request.FILES.get('file')
+        if not file:
+            return Response(
+                {"error": "Файл не предоставлен"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Проверяем размер файла (максимум 50MB)
+        if file.size > 50 * 1024 * 1024:
+            return Response(
+                {"error": "Файл слишком большой. Максимальный размер: 50MB"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Создаем прикрепленный файл
+        attachment = MessageAttachment.objects.create(
+            message=message,
+            file=file,
+            original_filename=file.name
+        )
+        
+        return Response(MessageAttachmentSerializer(attachment).data, 
+                       status=status.HTTP_201_CREATED)
+    
+    def _has_chat_access(self, user, chat):
+        if user in chat.participants.all():
+            return True
+        if user in chat.teachers.all():
+            return True
+        if user == chat.created_by:
+            return True
+        if user.study_group and user.study_group in chat.study_groups.all():
+            return True
+        return False
+    
     def get_serializer_context(self):
+        """Добавляем request в контекст сериализатора"""
         context = super().get_serializer_context()
         context['request'] = self.request
         return context
+    
+
+
+class MessageAttachmentViewSet(viewsets.ModelViewSet):
+    serializer_class = MessageAttachmentSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get_queryset(self):
+        user = self.request.user
+        user_chats = Chat.objects.filter(
+            Q(study_groups=user.study_group) | 
+            Q(teachers=user) |
+            Q(participants=user) |
+            Q(created_by=user)
+        ).distinct()
+        
+        return MessageAttachment.objects.filter(message__chat__in=user_chats)
+    
+    @action(detail=True, methods=['get'])
+    def download(self, request, pk=None):
+        """Скачать прикрепленный файл"""
+        attachment = self.get_object()
+        
+        # Проверяем доступ к файлу
+        if not self._has_chat_access(request.user, attachment.message.chat):
+            return Response(
+                {"error": "У вас нет доступа к этому файлу"},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        # Возвращаем файл для скачивания
+        response = FileResponse(attachment.file.open(), as_attachment=True)
+        response['Content-Disposition'] = f'attachment; filename="{attachment.original_filename}"'
+        return response
+    
+    def _has_chat_access(self, user, chat):
+        if user in chat.participants.all():
+            return True
+        if user in chat.teachers.all():
+            return True
+        if user == chat.created_by:
+            return True
+        if user.study_group and user.study_group in chat.study_groups.all():
+            return True
+        return False

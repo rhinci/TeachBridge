@@ -178,6 +178,124 @@ class Chat(models.Model):
     @property
     def display_avatar_url(self):
         return self.get_avatar_url()
+    
+
+
+class MessageAttachment(models.Model):
+    class FileType(models.TextChoices):
+        DOCUMENT = 'document', 'Документ'
+        IMAGE = 'image', 'Изображение'
+        VIDEO = 'video', 'Видео'
+        AUDIO = 'audio', 'Аудио'
+        ARCHIVE = 'archive', 'Архив'
+        OTHER = 'other', 'Другой'
+    
+    message = models.ForeignKey(
+        'Message',
+        on_delete=models.CASCADE,
+        related_name='attachments',
+        verbose_name="Сообщение"
+    )
+    
+    file = models.FileField(
+        upload_to='message_attachments/%Y/%m/%d/',
+        verbose_name="Файл",
+        max_length=500
+    )
+    
+    original_filename = models.CharField(
+        max_length=255,
+        verbose_name="Оригинальное имя файла"
+    )
+    
+    file_type = models.CharField(
+        max_length=20,
+        choices=FileType.choices,
+        default=FileType.DOCUMENT,
+        verbose_name="Тип файла"
+    )
+    
+    file_size = models.PositiveIntegerField(
+        verbose_name="Размер файла (байты)",
+        default=0
+    )
+    
+    uploaded_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Дата загрузки"
+    )
+    
+    class Meta:
+        verbose_name = "Прикрепленный файл"
+        verbose_name_plural = "Прикрепленные файлы"
+        ordering = ['-uploaded_at']
+    
+    def __str__(self):
+        return f"{self.original_filename} (к сообщению {self.message.id})"
+    
+    def save(self, *args, **kwargs):
+        """Автоматически определяем тип файла и сохраняем оригинальное имя"""
+        if self.file:
+            # Сохраняем оригинальное имя файла
+            if not self.original_filename:
+                self.original_filename = self.file.name
+            
+            # Определяем размер файла
+            if not self.file_size:
+                self.file_size = self.file.size
+            
+            # Автоматически определяем тип файла по расширению
+            if not self.file_type or self.file_type == self.FileType.OTHER:
+                self.file_type = self._detect_file_type()
+        
+        super().save(*args, **kwargs)
+    
+    def _detect_file_type(self):
+        """Определяем тип файла по расширению"""
+        filename = self.original_filename.lower()
+        
+        # Изображения
+        image_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.svg']
+        if any(filename.endswith(ext) for ext in image_extensions):
+            return self.FileType.IMAGE
+        
+        # Видео
+        video_extensions = ['.mp4', '.avi', '.mov', '.wmv', '.flv', '.mkv', '.webm']
+        if any(filename.endswith(ext) for ext in video_extensions):
+            return self.FileType.VIDEO
+        
+        # Аудио
+        audio_extensions = ['.mp3', '.wav', '.ogg', '.m4a', '.flac']
+        if any(filename.endswith(ext) for ext in audio_extensions):
+            return self.FileType.AUDIO
+        
+        # Архивы
+        archive_extensions = ['.zip', '.rar', '.7z', '.tar', '.gz']
+        if any(filename.endswith(ext) for ext in archive_extensions):
+            return self.FileType.ARCHIVE
+        
+        # Документы (всё остальное)
+        return self.FileType.DOCUMENT
+    
+    @property
+    def file_url(self):
+        """URL для скачивания файла"""
+        if self.file:
+            return self.file.url
+        return None
+    
+    @property
+    def human_file_size(self):
+        """Человеко-читаемый размер файла"""
+        if self.file_size < 1024:
+            return f"{self.file_size} Б"
+        elif self.file_size < 1024 * 1024:
+            return f"{self.file_size / 1024:.1f} КБ"
+        elif self.file_size < 1024 * 1024 * 1024:
+            return f"{self.file_size / (1024 * 1024):.1f} МБ"
+        else:
+            return f"{self.file_size / (1024 * 1024 * 1024):.1f} ГБ"
+
 
 class Message(models.Model):
     chat = models.ForeignKey(
