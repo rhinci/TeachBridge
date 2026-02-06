@@ -8,3 +8,4 @@ sqlparse==0.5.3
 Pillow>=10.0.0
 djangorestframework-simplejwt>=5.3
 django-sendmail-backend
+#django-extensions==4.1.0

@@ -7,6 +7,8 @@ import PersonalChats from './pages/PersonalChats';
 import Courses from './pages/Courses';
 import Profile from './pages/Profile';
 import StudyChatPage from './pages/StudyChatPage';
+import StudyChats from './pages/StudyChats'
+import PersonalChatPage from './pages/PersonalChatPage';
 import PrivateRoute from './components/PrivateRoute';
 
 function App() {
@@ -28,6 +30,20 @@ function App() {
         <Route path="/personalchats" element={
           <PrivateRoute>
             <PersonalChats />
+          </PrivateRoute>
+        } />
+
+        {/* Страница конкретного личного чата */}
+        <Route path="/personal-chat/:chatId" element={
+          <PrivateRoute>
+            <PersonalChatPage />
+          </PrivateRoute>
+        } />
+
+        {/* Страница конкретного учебного чата */}
+        <Route path="/study-chat/:chatId" element={
+          <PrivateRoute>
+            <StudyChatPage />
           </PrivateRoute>
         } />
 
