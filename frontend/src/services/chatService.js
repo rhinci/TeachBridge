@@ -28,6 +28,44 @@ export const chatService = {
   },
 
   /**
+   * Создать новый раздел в чате
+   */
+  createChatSection: async (chatId, sectionData) => {
+    try {
+      const response = await api.post(`/chats/chats/${chatId}/create_section/`, sectionData);
+      return response.data;
+    } catch (error) {
+      console.error(`Ошибка при создании раздела в чате ${chatId}:`, error);
+      throw error;
+    }
+  },
+
+  /**
+   * Обновить раздел чата
+   */
+  updateChatSection: async (sectionId, sectionData) => {
+    try {
+      const response = await api.put(`/chats/chat-sections/${sectionId}/`, sectionData);
+      return response.data;
+    } catch (error) {
+      console.error(`Ошибка при обновлении раздела ${sectionId}:`, error);
+      throw error;
+    }
+  },
+
+  /**
+   * Удалить раздел чата
+   */
+  deleteChatSection: async (sectionId) => {
+    try {
+      const response = await api.delete(`/chats/chat-sections/${sectionId}/`);
+      return response.data;
+    } catch (error) {
+      console.error(`Ошибка при удалении раздела ${sectionId}:`, error);
+      throw error;
+    }
+  },
+  /**
    * Получить только учебные чаты
    */
    getGroupChats: async () => {

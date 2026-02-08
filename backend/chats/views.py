@@ -50,7 +50,7 @@ class ChatViewSet(viewsets.ModelViewSet):
         if chat.chat_type == Chat.ChatType.GROUP:
             ChatSection.objects.create(
                 chat=chat,
-                name='#general',
+                name='general',
                 description='Основной раздел для общего обсуждения',
                 order=0,
                 created_by=self.request.user

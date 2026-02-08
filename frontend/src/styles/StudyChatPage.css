@@ -707,3 +707,40 @@
     padding: 10px 20px;
   }
 }
+/* Кнопка удаления раздела */
+.study-delete-section-btn {
+  background: none;
+  border: none;
+  color: var(--color-danger);
+  font-size: 16px;
+  cursor: pointer;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  opacity: 0;
+  transition: all 0.2s;
+  padding: 0;
+  line-height: 1;
+  margin-left: 8px;
+}
+
+.study-section-item:hover .study-delete-section-btn {
+  opacity: 0.7;
+}
+
+.study-section-item:hover .study-delete-section-btn:hover {
+  opacity: 1;
+  background-color: rgba(231, 76, 60, 0.1);
+}
+
+.study-section-item.active .study-delete-section-btn {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.study-section-item.active .study-delete-section-btn:hover {
+  color: white;
+  background-color: rgba(255, 255, 255, 0.2);
+}
