@@ -4,6 +4,22 @@ import { NavLink, useNavigate } from 'react-router-dom';
 const NavPanel = () => {
   const navigate = useNavigate();
 
+  // Получаем роль текущего пользователя
+  const getUserRole = () => {
+    try {
+      const userStr = localStorage.getItem('user');
+      if (!userStr) return null;
+      const user = JSON.parse(userStr);
+      return user ? user.role : null;
+    } catch (error) {
+      console.error('Ошибка получения роли пользователя:', error);
+      return null;
+    }
+  };
+
+  const userRole = getUserRole();
+  const isDirector = userRole === 'director';
+
   const handleLogout = () => {
     // Удаляем токены
     localStorage.removeItem('access_token');
@@ -38,23 +54,33 @@ const NavPanel = () => {
             </div>
             <span className="nav-tooltip">Курсы</span>         
           </NavLink>
+
+          {/* Раздел для директора */}
+          {isDirector && (
+            <NavLink to="/director" className="nav-tooltip-wrapper" aria-label="Управление пользователями">
+              <div className='nav-panel-inactive'>
+                {/* Заглушка для иконки управления */}
+                <img src="/src/styles/images/management-inactive.png" alt="Management" />
+              </div>
+              <span className="nav-tooltip">Управление</span>         
+            </NavLink>
+          )}
         </div>
 
         <a 
-        href="#"
-        onClick={(e) => {
+          href="#"
+          onClick={(e) => {
             e.preventDefault();
             handleLogout();
-        }}
-        className="nav-tooltip-wrapper"
-        aria-label="Выйти"
+          }}
+          className="nav-tooltip-wrapper"
+          aria-label="Выйти"
         >
-        <div className='nav-panel-inactive'>
+          <div className='nav-panel-inactive'>
             <img src="/src/styles/images/exit.png" alt="Exit" />
-        </div>
-        <span className="nav-tooltip">Выйти</span>           
+          </div>
+          <span className="nav-tooltip">Выйти</span>           
         </a>
-
       </div>
     </nav>
   );

@@ -1,0 +1,221 @@
+/* Стили для страницы заявок на регистрацию */
+
+.pending-registrations-container {
+  padding: 24px;
+}
+
+.registrations-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid var(--color-border);
+}
+
+.registrations-header h2 {
+  margin: 0;
+  font-size: 24px;
+  color: var(--color-text-header);
+}
+
+.registrations-count {
+  font-size: 16px;
+  color: var(--color-text);
+}
+
+.count-badge {
+  background: var(--color-primary);
+  color: var(--color-text-button);
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-weight: bold;
+  margin-left: 8px;
+}
+
+/* Список заявок */
+.registrations-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.registration-card {
+  background: var(--color-surface);
+  border: 2px solid var(--color-border);
+  border-radius: 12px;
+  padding: 20px;
+  transition: all 0.2s;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.registration-card:hover {
+  border-color: var(--color-primary);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.student-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.student-main {
+  margin-bottom: 16px;
+}
+
+.student-name {
+  font-size: 18px;
+  font-weight: bold;
+  color: var(--color-text-header);
+  margin-bottom: 4px;
+}
+
+.student-email {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+}
+
+.student-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.student-group,
+.student-department,
+.student-date {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.detail-label {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.detail-value {
+  font-size: 14px;
+  color: var(--color-text);
+  font-weight: 500;
+  background: var(--color-bg);
+  padding: 4px 10px;
+  border-radius: 6px;
+}
+
+/* Кнопки действий */
+.registration-actions {
+  display: flex;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.approve-btn,
+.reject-btn {
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  min-width: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+
+.approve-btn {
+  background: var(--color-success);
+  color: var(--color-text-button);
+}
+
+.approve-btn:hover:not(:disabled) {
+  background: #27ae60;
+  transform: translateY(-1px);
+}
+
+.reject-btn {
+  background: var(--color-danger);
+  color: var(--color-text-button);
+}
+
+.reject-btn:hover:not(:disabled) {
+  background: #c0392b;
+  transform: translateY(-1px);
+}
+
+.approve-btn:disabled,
+.reject-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.action-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* Пустые состояния и загрузка */
+.pending-registrations-loading,
+.pending-registrations-error,
+.pending-registrations-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+  text-align: center;
+}
+
+.pending-registrations-error .error-icon {
+  color: var(--color-danger);
+}
+
+.pending-registrations-empty .empty-icon {
+  color: var(--color-success);
+}
+
+.pending-registrations-empty h3 {
+  margin: 16px 0 8px;
+  color: var(--color-text-header);
+  font-size: 20px;
+}
+
+.pending-registrations-empty p {
+  color: var(--color-text-secondary);
+  max-width: 400px;
+  line-height: 1.6;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .registration-card {
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .registration-actions {
+    width: 100%;
+  }
+  
+  .approve-btn,
+  .reject-btn {
+    flex: 1;
+  }
+  
+  .student-details {
+    flex-direction: column;
+    gap: 12px;
+  }
+}

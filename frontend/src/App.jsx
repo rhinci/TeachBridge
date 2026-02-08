@@ -10,6 +10,7 @@ import StudyChatPage from './pages/StudyChatPage';
 import PersonalChatPage from './pages/PersonalChatPage';
 import PrivateRoute from './components/PrivateRoute';
 import UserProfile from './pages/UserProfile';
+import DirectorPanel from './pages/director/DirectorPanel';
 
 function App() {
   return (
@@ -68,6 +69,14 @@ function App() {
         <Route path="/chat" element={
           <PrivateRoute>
             <StudyChatPage />
+          </PrivateRoute>
+        } />
+
+
+        {/* Панель директора */}
+        <Route path="/director" element={
+          <PrivateRoute>
+            <DirectorPanel />
           </PrivateRoute>
         } />
 
