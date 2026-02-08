@@ -1,0 +1,73 @@
+/* Стили для страницы списка учебных чатов */
+
+.study-chats-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.create-chat-button-container {
+  margin-bottom: 24px;
+  text-align: right;
+}
+
+.create-chat-btn {
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.create-chat-btn:hover {
+  background: var(--color-secondary);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(42, 69, 120, 0.2);
+}
+
+.study-chats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 20px;
+}
+
+/* Загрузка, ошибки, пустые состояния */
+.loading, .error, .empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  background: var(--color-white);
+  border-radius: 12px;
+  border: 2px solid var(--color-light-gray);
+  margin: 20px 0;
+  color: var(--color-text-light);
+  font-size: 16px;
+}
+
+.error {
+  color: #e74c3c;
+  border-color: #f8d7da;
+  background: #f8d7da;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .study-chats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .create-chat-button-container {
+    text-align: center;
+  }
+  
+  .create-chat-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}

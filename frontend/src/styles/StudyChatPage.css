@@ -1,193 +1,709 @@
-/* --- Левое меню --- */
-.sidebar-left {
-  background: var(--color-surface);
-  border-radius: 8px;
-  padding: 16px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  overflow-y: auto;
-  height: fit-content;
-  max-height: calc(100vh - 120px);
+/* Стили для страницы учебного чата - уникальные префиксы */
+
+.study-chat-page-wrapper {
+  padding: 20px 0;
+  background: var(--color-bg);
 }
 
-.chat-nav-item {
-  padding: 10px 0;
-  cursor: pointer;
-  color: var(--color-text-secondary);
-  border-bottom: 1px solid var(--color-border);
+.study-chat-grid {
+  display: grid;
+  grid-template-columns: 250px 1fr 280px;
+  gap: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 20px;
 }
 
-.chat-nav-item:last-child {
-  border-bottom: none;
-}
-
-.chat-nav-item:hover {
-  color: var(--color-text-header);
-}
-
-/* --- Центральный чат --- */
-.chat-main {
-  background: var(--color-surface);
-  border-radius: 8px;
+/* Общие стили для карточек с уникальными классами */
+.study-chat-left,
+.study-chat-center,
+.study-chat-right {
   display: flex;
   flex-direction: column;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  overflow: hidden;
-  height: fit-content;
-  max-height: calc(100vh - 120px);
+  gap: 20px;
 }
 
-.chat-header {
-  padding: 12px 20px;
+.study-sections-card,
+.study-participants-card,
+.study-courses-card,
+.study-chat-main-card {
+  background: var(--color-surface);
+  border-radius: 15px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  border: 2px solid var(--color-border);
+  overflow: hidden;
+}
+
+.study-card-header {
+  padding: 16px 20px;
   border-bottom: 2px solid var(--color-border);
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 12px;
+  background: var(--color-surface);
 }
 
-.chat-title {
-  font-size: 20px;
-  color: var(--color-text-header);
+.study-card-header h3 {
   margin: 0;
+  font-size: 18px;
+  font-weight: bold;
+  color: var(--color-text-header);
 }
 
-.chat-messages {
-  flex: 1;
-  padding: 16px;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  max-height: 400px;
+/* Левая колонка: Разделы */
+.study-sections-card {
+  height: fit-content;
 }
 
-.message {
-  max-width: 70%;
-  padding: 10px 15px;
-  border-radius: 12px;
-  position: relative;
-}
-
-.message.outgoing {
+.study-create-btn {
   background: var(--color-primary);
   color: var(--color-text-button);
-  align-self: flex-end;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
 }
 
-.message.incoming {
-  background: #e0e8f0;
-  color: var(--color-text);
+.study-create-btn:hover {
+  background-color: var(--color-button-hover);
+}
+
+.study-sections-list {
+  padding: 12px;
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.study-section-item {
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  background: var(--color-bg-text);
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid transparent;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.study-section-item:hover {
+  background: var(--color-inactive);
+  border-color: var(--color-primary);
+}
+
+.study-section-item.active {
+  background: var(--color-primary);
+  color: var(--color-text-button);
+  border-color: var(--color-primary);
+}
+
+.study-section-name {
+  font-weight: 500;
+  font-size: 14px;
+  flex: 1;
+}
+
+.study-section-count {
+  font-size: 11px;
+  opacity: 0.7;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 2px 6px;
+  border-radius: 10px;
+}
+
+.study-section-item.active .study-section-count {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.study-no-sections {
+  text-align: center;
+  padding: 30px 20px;
+  color: var(--color-text-secondary);
+  font-style: italic;
+  font-size: 14px;
+}
+
+/* Центральная колонка: Чат */
+.study-chat-main-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 600px;
+  max-height: 700px;
+}
+
+.study-chat-header {
+  padding: 16px 24px;
+  border-bottom: 2px solid var(--color-border);
+  background: var(--color-surface);
+  flex-shrink: 0;
+}
+
+.study-chat-info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.study-chat-avatar img {
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
+  object-fit: cover;
+  border: 2px solid var(--color-primary);
+}
+
+.study-chat-details {
+  flex: 1;
+}
+
+.study-chat-title {
+  margin: 0 0 6px 0;
+  font-size: 22px;
+  font-weight: bold;
+  color: var(--color-text-header);
+}
+
+.study-chat-subtitle {
+  display: flex;
+  gap: 12px;
+  font-size: 14px;
+  color: var(--color-text-secondary);
+}
+
+.study-department {
+  background: var(--color-inactive);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.study-active-section {
+  color: var(--color-primary);
+  font-weight: 500;
+  font-size: 14px;
+}
+
+/* Окно сообщений */
+.study-messages-window {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  background: var(--color-bg);
+}
+
+.study-empty-messages {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
+  text-align: center;
+}
+
+.study-empty-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.3;
+  color: var(--color-text-secondary);
+}
+
+.study-empty-text {
+  font-size: 16px;
+  color: var(--color-text-secondary);
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.study-empty-subtext {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  opacity: 0.7;
+}
+
+.study-messages-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* Стили сообщений */
+.study-message {
+  display: flex;
+  flex-direction: column;
+  max-width: 75%;
+}
+
+.study-message.incoming {
   align-self: flex-start;
 }
 
-.message-time {
-  font-size: 12px;
-  opacity: 0.8;
-  margin-top: 4px;
-  text-align: right;
+.study-message.outgoing {
+  align-self: flex-end;
+  align-items: flex-end;
 }
 
-.chat-input {
-  padding: 12px 20px;
-  border-top: 2px solid var(--color-border);
+.study-message-author {
   display: flex;
-  gap: 8px;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
 }
 
-.chat-input input {
+.study-author-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--color-border);
+}
+
+.study-author-details {
   flex: 1;
+}
+
+.study-author-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-primary);
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.study-author-name:hover {
+  color: var(--color-button-hover);
+  text-decoration: underline;
+}
+
+.study-message-content {
+  padding: 14px 18px;
+  border-radius: 16px;
+  position: relative;
+}
+
+.study-message.incoming .study-message-content {
+  background: var(--color-surface);
+  border: 2px solid var(--color-border);
+  border-top-left-radius: 4px;
+}
+
+.study-message.outgoing .study-message-content {
+  background: var(--color-primary);
+  color: var(--color-text-button);
+  border-top-right-radius: 4px;
+}
+
+.study-message-text {
+  word-wrap: break-word;
+  line-height: 1.5;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.study-message-attachments {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.study-attachment-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   padding: 8px 12px;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--color-primary);
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.study-message.outgoing .study-attachment-link {
+  background: rgba(255, 255, 255, 0.15);
+  color: var(--color-text-button);
+}
+
+.study-attachment-link:hover {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.study-message.outgoing .study-attachment-link:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.study-attachment-icon {
+  font-size: 14px;
+}
+
+.study-attachment-name {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.study-attachment-size {
+  font-size: 11px;
+  opacity: 0.8;
+}
+
+.study-message-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.study-message-time {
+  font-size: 11px;
+  opacity: 0.7;
+  color: var(--color-text-secondary);
+}
+
+.study-message.outgoing .study-message-time {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Панель ввода */
+.study-input-panel {
+  padding: 16px 24px;
+  border-top: 2px solid var(--color-border);
+  background: var(--color-surface);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.study-attach-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid var(--color-border);
+  background: transparent;
+  color: var(--color-text);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.study-attach-btn:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background-color: var(--color-bg);
+}
+
+.study-message-input {
+  flex: 1;
+  padding: 12px 18px;
   border: 2px solid var(--color-border);
   border-radius: 24px;
   font-size: 14px;
   background: var(--color-surface);
   color: var(--color-text);
+  transition: all 0.2s;
+  min-height: 44px;
 }
 
-.chat-input input:focus {
+.study-message-input:focus {
   outline: none;
-  border-color: var(--color-text-header);
+  border-color: var(--color-primary);
 }
 
-.chat-input button {
-  padding: 8px 16px;
+.study-send-btn {
+  padding: 11px 28px;
   background: var(--color-primary);
   color: var(--color-text-button);
   border: none;
   border-radius: 24px;
   cursor: pointer;
   font-weight: bold;
-}
-
-.chat-input button:hover {
-  background: var(--color-button-hover);
-}
-
-/* --- Правая панель --- */
-.sidebar-right {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.participants, .courses {
-  background: var(--color-surface);
-  border-radius: 8px;
-  padding: 16px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.participants h3, .courses h3 {
-  margin: 0 0 12px 0;
-  color: var(--color-text-header);
-  font-size: 18px;
-}
-
-.participant {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 0;
-  border-bottom: 1px solid var(--color-border);
-}
-
-.participant:last-child {
-  border-bottom: none;
-}
-
-.participant-name {
   font-size: 14px;
+  transition: background-color 0.2s;
+  flex-shrink: 0;
 }
 
-.course-item {
+.study-send-btn:hover:not(:disabled) {
+  background-color: var(--color-button-hover);
+}
+
+.study-send-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: var(--color-inactive);
+}
+
+/* Правая колонка: Участники и курсы */
+.study-participants-card,
+.study-courses-card {
+  height: fit-content;
+}
+
+.study-count-badge {
+  font-size: 12px;
+  color: var(--color-text);
+  background: var(--color-inactive);
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-weight: 500;
+}
+
+.study-participants-list,
+.study-courses-list {
+  padding: 12px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.study-participant-item {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px 0;
-  border-bottom: 1px solid var(--color-border);
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  transition: all 0.2s;
+  cursor: pointer;
+  border: 1px solid transparent;
 }
 
-.course-item:last-child {
-  border-bottom: none;
+.study-participant-item:hover {
+  background: var(--color-bg-text);
+  border-color: var(--color-primary);
 }
 
-.course-icon {
+.study-participant-avatar {
   width: 40px;
   height: 40px;
-  background-color: var(--color-bg-text);
-  border-radius: 8px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--color-border);
+  flex-shrink: 0;
 }
 
-.course-info {
+.study-participant-info {
   flex: 1;
+  min-width: 0;
 }
 
-.course-title {
+.study-participant-name {
   font-weight: bold;
   font-size: 14px;
+  color: var(--color-text);
   margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.course-progress {
+.study-participant-role {
   font-size: 12px;
   color: var(--color-text-secondary);
+  background: var(--color-inactive);
+  padding: 2px 8px;
+  border-radius: 10px;
+  display: inline-block;
+}
+
+/* Курсы */
+.study-empty-courses {
+  text-align: center;
+  padding: 30px 20px;
+  color: var(--color-text-secondary);
+  font-style: italic;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.study-course-icon {
+  font-size: 32px;
+  opacity: 0.5;
+  color: var(--color-text-secondary);
+}
+
+.study-course-text {
+  font-size: 14px;
+  max-width: 200px;
+  line-height: 1.4;
+}
+
+.study-course-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  background: var(--color-bg-text);
+  transition: all 0.2s;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.study-course-item:hover {
+  background: var(--color-inactive);
+  border-color: var(--color-primary);
+}
+
+.study-course-item .study-course-icon {
+  font-size: 20px;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-primary);
+  color: var(--color-text-button);
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.study-course-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.study-course-title {
+  font-weight: bold;
+  font-size: 14px;
+  color: var(--color-text);
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.study-course-description {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Состояния загрузки и ошибок */
+.study-chat-loading,
+.study-chat-error {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 400px;
+  font-size: 16px;
+  color: var(--color-text-secondary);
+  background: var(--color-surface);
+  border-radius: 12px;
+  margin: 20px;
+  border: 2px solid var(--color-border);
+}
+
+.study-chat-error {
+  color: var(--color-danger);
+}
+
+/* Скрыть скроллбар */
+.study-sections-list::-webkit-scrollbar,
+.study-participants-list::-webkit-scrollbar,
+.study-courses-list::-webkit-scrollbar,
+.study-messages-window::-webkit-scrollbar {
+  width: 6px;
+}
+
+.study-sections-list::-webkit-scrollbar-track,
+.study-participants-list::-webkit-scrollbar-track,
+.study-courses-list::-webkit-scrollbar-track,
+.study-messages-window::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.study-sections-list::-webkit-scrollbar-thumb,
+.study-participants-list::-webkit-scrollbar-thumb,
+.study-courses-list::-webkit-scrollbar-thumb,
+.study-messages-window::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 3px;
+}
+
+.study-sections-list::-webkit-scrollbar-thumb:hover,
+.study-participants-list::-webkit-scrollbar-thumb:hover,
+.study-courses-list::-webkit-scrollbar-thumb:hover,
+.study-messages-window::-webkit-scrollbar-thumb:hover {
+  background: var(--color-inactive);
+}
+
+/* Адаптивность */
+@media (max-width: 1200px) {
+  .study-chat-grid {
+    grid-template-columns: 220px 1fr 260px;
+    gap: 16px;
+    padding: 0 16px;
+  }
+}
+
+@media (max-width: 992px) {
+  .study-chat-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr auto;
+    gap: 16px;
+  }
+  
+  .study-chat-main-card {
+    min-height: 500px;
+    max-height: 600px;
+  }
+  
+  .study-sections-card,
+  .study-participants-card,
+  .study-courses-card {
+    max-height: 300px;
+  }
+  
+  .study-messages-list {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .study-chat-page-wrapper {
+    padding: 0;
+  }
+  
+  .study-chat-grid {
+    padding: 0 12px;
+  }
+  
+  .study-card-header {
+    padding: 14px 16px;
+  }
+  
+  .study-chat-header {
+    padding: 14px 16px;
+  }
+  
+  .study-messages-window {
+    padding: 16px;
+  }
+  
+  .study-input-panel {
+    padding: 12px 16px;
+  }
+  
+  .study-send-btn {
+    padding: 10px 20px;
+  }
 }

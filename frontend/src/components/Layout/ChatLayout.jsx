@@ -1,16 +1,15 @@
 import React from 'react';
 import HeaderMain from '../HeaderMain';
 import NavPanel from '../NavPanel';
+import "../../styles/ChatLayout.css";
 
-export default function ChatLayout({ children, header, search }) {
+export default function ChatLayout({ children }) {
   return (
-    <div className="base-layout">
+    <div className="chat-layout">
       <HeaderMain />
-      <NavPanel /> 
-      <main className="chat-layout-container">
-        <div className='chat-layout'>
-          {children}            
-        </div>
+      <NavPanel />
+      <main className="chat-layout-main">
+        {children}
       </main>
     </div>
   );

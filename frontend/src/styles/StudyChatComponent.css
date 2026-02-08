@@ -6,14 +6,68 @@
   display: flex;
   align-items: center;
   gap: 20px;
-  min-height: 72px;
+  min-height: 100px;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.study-chat-component:hover {
+  border-color: var(--color-primary);
+  box-shadow: 0 2px 8px rgba(42, 69, 120, 0.1);
+  transform: translateY(-2px);
+}
+
+.study-chat-icon {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  flex-shrink: 0;
 }
 
 .study-chat-icon img {
-  width: 80px;
-  height: 80px;
+  width: 100%;
+  height: 100%;
   border-radius: 20px;
   object-fit: cover;
+  border: 2px solid var(--color-light-gray);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+/* Если изображение не загрузилось */
+.study-chat-icon img:after {
+  content: attr(alt);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+  color: white;
+  font-size: 20px;
+  font-weight: bold;
+  border-radius: 20px;
+}
+
+.chat-creator-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: var(--color-primary);
+  color: white;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  border: 2px solid var(--color-white);
 }
 
 .study-chat-info {
@@ -21,32 +75,67 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 4px;
+  gap: 8px;
   min-width: 0;
 }
 
-.study-chat-info .study-chat-name {
+.study-chat-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.study-chat-name {
   font-size: 24px;
   color: var(--color-text-header);
-  margin-bottom: 8px;
+  font-weight: 600;
 }
 
-.study-chat-info .study-chat-section {
-  color: var(--color-text-secondary);
+.study-chat-department {
+  font-size: 14px;
+  color: var(--color-secondary);
+  background: rgba(59, 99, 171, 0.1);
+  padding: 2px 8px;
+  border-radius: 12px;
 }
 
-.study-chat-info .study-chat-latest-message {
+.study-chat-section {
+  color: var(--color-secondary);
+  font-weight: 500;
+  font-size: 16px;
+}
+
+.study-chat-latest-message {
   color: var(--color-text-secondary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 100%;
+  font-size: 14px;
+  line-height: 1.4;
+  margin: 4px 0;
+}
+
+.study-chat-meta {
+  display: flex;
+  gap: 12px;
+  font-size: 12px;
+  color: var(--color-text-light);
+}
+
+.study-chat-participants,
+.study-chat-teachers {
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .study-chat-messages {
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .study-chat-messages .study-message-count {
@@ -58,4 +147,69 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .study-chat-component {
+    gap: 12px;
+    padding: 12px;
+  }
+  
+  .study-chat-icon {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .study-chat-name {
+    font-size: 18px;
+  }
+  
+  .study-chat-section {
+    font-size: 14px;
+  }
+  
+  .study-chat-latest-message {
+    font-size: 12px;
+  }
+}
+
+/* Состояния загрузки и пустые состояния */
+.study-chat-container .loading,
+.study-chat-container .error,
+.study-chat-container .empty-state {
+  text-align: center;
+  padding: 40px;
+  color: var(--color-text-light);
+  font-size: 16px;
+}
+
+.study-chat-container .error {
+  color: #e74c3c;
+}
+
+.empty-state {
+  font-style: italic;
+}
+
+/* Стили для заглушки */
+.study-chat-placeholder {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.placeholder-avatar {
+  width: 100%;
+  height: 100%;
+  border-radius: 20px;
+  background: var(--color-light-gray);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-light);
+  font-size: 24px;
+  font-weight: bold;
+  border: 2px dashed var(--color-border);
 }

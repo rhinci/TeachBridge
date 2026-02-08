@@ -9,6 +9,19 @@ const PersonalChats = () => {
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
 
+  // Функция для получения ID текущего пользователя
+  const getCurrentUserId = () => {
+    try {
+      const userStr = localStorage.getItem('user');
+      if (!userStr) return null;
+      const user = JSON.parse(userStr);
+      return user ? user.id : null;
+    } catch (error) {
+      console.error('Ошибка при получении ID пользователя:', error);
+      return null;
+    }
+  };
+
   // Загружаем личные чаты при монтировании
   useEffect(() => {
     loadPersonalChats();
@@ -18,10 +31,22 @@ const PersonalChats = () => {
     try {
       setLoading(true);
       const chats = await chatService.getPersonalChats();
+      console.log('Loaded personal chats:', chats);
+      
+      // Добавим отладку для каждого чата
+      chats.forEach((chat, index) => {
+        console.log(`Chat ${index} (ID: ${chat.id}):`, {
+          name: chat.name,
+          participants: chat.participants_info,
+          display_avatar: chat.display_avatar,
+          chat_type: chat.chat_type
+        });
+      });
+      
       setPersonalChats(chats);
     } catch (err) {
       setError('Не удалось загрузить личные чаты');
-      console.error(err);
+      console.error('Ошибка загрузки чатов:', err);
     } finally {
       setLoading(false);
     }
@@ -32,13 +57,14 @@ const PersonalChats = () => {
     if (!searchQuery) return true;
     
     // Поиск по имени собеседника
+    const currentUserId = getCurrentUserId();
     const otherParticipant = chat.participants_info?.find(p => 
-      p.id !== parseInt(localStorage.getItem('user_id'))
+      p.id !== currentUserId
     );
     
     if (!otherParticipant) return false;
     
-    const fullName = `${otherParticipant.first_name} ${otherParticipant.last_name}`.toLowerCase();
+    const fullName = `${otherParticipant.first_name || ''} ${otherParticipant.last_name || ''}`.toLowerCase();
     return fullName.includes(searchQuery.toLowerCase());
   });
 
@@ -46,8 +72,29 @@ const PersonalChats = () => {
     setSearchQuery(e.target.value);
   };
 
+  // Отладочный вывод
   useEffect(() => {
-    console.log('Loaded chats:', personalChats);
+    if (personalChats.length > 0) {
+      console.log('=== Final Chat Data ===');
+      console.log('Total chats:', personalChats.length);
+      
+      const currentUserId = getCurrentUserId();
+      console.log('Current user ID:', currentUserId);
+      
+      personalChats.forEach((chat, index) => {
+        const otherParticipant = chat.participants_info?.find(p => p.id !== currentUserId);
+        console.log(`Chat ${index}:`, {
+          id: chat.id,
+          name: chat.name,
+          otherParticipant: otherParticipant ? {
+            id: otherParticipant.id,
+            name: otherParticipant.get_full_name,
+            photo: otherParticipant.photo
+          } : null,
+          display_avatar: chat.display_avatar
+        });
+      });
+    }
   }, [personalChats]);
 
   return (

@@ -30,12 +30,50 @@ export const chatService = {
   /**
    * Получить только учебные чаты
    */
-  getGroupChats: async () => {
+   getGroupChats: async () => {
     try {
+      console.log('=== Debug: Calling /chats/chats/group_chats/ ===');
+      
       const response = await api.get('/chats/chats/group_chats/');
-      return response.data;
+      
+      console.log('=== Debug: API Response ===');
+      console.log('Response status:', response.status);
+      console.log('Response headers:', response.headers);
+      console.log('Response data type:', typeof response.data);
+      console.log('Response data:', response.data);
+      
+      // Проверяем структуру ответа
+      if (response.data && typeof response.data === 'object') {
+        // Проверяем разные возможные структуры
+        if (Array.isArray(response.data)) {
+          console.log('Data is array, length:', response.data.length);
+          if (response.data.length > 0) {
+            console.log('First chat sample:', response.data[0]);
+          }
+          return response.data;
+        } else if (response.data.results) {
+          console.log('Data has .results property, length:', response.data.results.length);
+          return response.data.results;
+        } else if (response.data.data) {
+          console.log('Data has .data property');
+          return response.data.data;
+        }
+      }
+      
+      console.error('Unexpected response structure:', response.data);
+      return [];
+      
     } catch (error) {
-      console.error('Ошибка при получении учебных чатов:', error);
+      console.error('=== Debug: API Error ===');
+      console.error('Error response:', error.response);
+      console.error('Error status:', error.response?.status);
+      console.error('Error data:', error.response?.data);
+      console.error('Error message:', error.message);
+      
+      if (error.response?.status === 404) {
+        console.error('Endpoint not found! Check backend URL');
+      }
+      
       throw error;
     }
   },

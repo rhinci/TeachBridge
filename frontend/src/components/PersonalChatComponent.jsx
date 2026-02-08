@@ -1,44 +1,60 @@
 import React from 'react';
-import { authService } from '../utils/auth';
 import '../styles/PersonalChatComponent.css';
 
 const PersonalChatComponent = ({ chat, onClick }) => {
-  // Получаем текущего пользователя
-  const currentUser = authService.getCurrentUser();
-  const currentUserId = currentUser ? currentUser.id : null;
+  // Функция для получения ID текущего пользователя
+  const getCurrentUserId = () => {
+    try {
+      const userStr = localStorage.getItem('user');
+      if (!userStr) return null;
+      const user = JSON.parse(userStr);
+      return user ? user.id : null;
+    } catch (error) {
+      console.error('Ошибка при получении ID пользователя:', error);
+      return null;
+    }
+  };
+
+  const currentUserId = getCurrentUserId();
+  
+  // Функция для получения собеседника
+  const getOtherParticipant = () => {
+    if (!chat.participants_info || chat.participants_info.length === 0) {
+      return null;
+    }
+    
+    console.log('Finding other participant for user ID:', currentUserId);
+    console.log('Participants:', chat.participants_info);
+    
+    // Если есть текущий пользователь, находим собеседника
+    if (currentUserId) {
+      const otherParticipant = chat.participants_info.find(p => p.id !== currentUserId);
+      console.log('Found other participant:', otherParticipant);
+      return otherParticipant;
+    }
+    
+    // Если нет текущего пользователя, берем первого участника
+    console.log('No current user ID, using first participant');
+    return chat.participants_info[0];
+  };
+
+  const otherParticipant = getOtherParticipant();
   
   // Функция для получения имени собеседника
   const getDisplayName = () => {
-    if (!chat.participants_info || chat.participants_info.length === 0) {
-      return chat.name || 'Неизвестный пользователь';
+    if (otherParticipant) {
+      return otherParticipant.get_full_name || 
+             `${otherParticipant.first_name || ''} ${otherParticipant.last_name || ''}`.trim() ||
+             'Неизвестный пользователь';
     }
     
-    // Если есть текущий пользователь, находим собеседника
-    if (currentUserId && chat.participants_info.length === 2) {
-      const otherParticipant = chat.participants_info.find(p => p.id !== currentUserId);
-      if (otherParticipant) {
-        return otherParticipant.get_full_name || 
-               `${otherParticipant.first_name} ${otherParticipant.last_name}`;
-      }
-    }
-    
-    // Если не нашли, используем название чата
+    // Если нет собеседника, используем название чата
     return chat.name || 'Неизвестный пользователь';
   };
 
-  console.log('Current user:', currentUser);
-  console.log('Chat participants:', chat.participants_info);
-
   // Функция для получения роли собеседника
   const getRoleDisplay = () => {
-    if (!chat.participants_info || chat.participants_info.length === 0) {
-      return '';
-    }
-    
-    const currentUserId = authService.getCurrentUserId();
-    const otherParticipant = chat.participants_info.find(p => p.id !== currentUserId);
-    
-    if (!otherParticipant) return '';
+    if (!otherParticipant || !otherParticipant.role) return '';
     
     const roles = {
       'student': 'Студент',
@@ -57,30 +73,30 @@ const PersonalChatComponent = ({ chat, onClick }) => {
   
   // Получаем URL аватарки
   const getAvatarUrl = () => {
-    // Если есть display_avatar от бекенда
-    if (chat.display_avatar) return chat.display_avatar;
+    // Если есть display_avatar от бекенда (должен показывать аватарку собеседника для личных чатов)
+    if (chat.display_avatar) {
+      console.log('Using chat.display_avatar:', chat.display_avatar);
+      return chat.display_avatar;
+    }
     
-    // Ищем аватарку собеседника
-    if (chat.participants_info && chat.participants_info.length > 0) {
-      const currentUserId = authService.getCurrentUserId();
-      const otherParticipant = chat.participants_info.find(p => p.id !== currentUserId);
-      if (otherParticipant && otherParticipant.photo) {
-        return otherParticipant.photo;
-      }
+    // Используем аватарку собеседника
+    if (otherParticipant && otherParticipant.photo) {
+      console.log('Using other participant photo:', otherParticipant.photo);
+      return otherParticipant.photo;
     }
     
     // Дефолтная аватарка
+    console.log('Using default avatar');
     return '/src/styles/images/default-avatar.png';
   };
 
-  // DEBUG: выводим информацию о чате
-  console.log('Chat data:', {
-    chatId: chat.id,
-    chatName: chat.name,
-    participants: chat.participants_info,
-    currentUserId,
-    displayName
-  });
+  console.log('=== Chat Component Debug ===');
+  console.log('Chat ID:', chat.id);
+  console.log('Current user ID:', currentUserId);
+  console.log('Other participant:', otherParticipant);
+  console.log('Display name:', displayName);
+  console.log('Avatar URL:', getAvatarUrl());
+  console.log('===========================');
 
   return (
     <div className='personal-chat-component' onClick={onClick} style={{ cursor: 'pointer' }}>
@@ -89,6 +105,7 @@ const PersonalChatComponent = ({ chat, onClick }) => {
           src={getAvatarUrl()} 
           alt={displayName}
           onError={(e) => {
+            console.log('Image load error, using default');
             e.target.src = '/src/styles/images/default-avatar.png';
           }}
         />
