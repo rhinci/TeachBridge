@@ -107,14 +107,35 @@ class Chat(models.Model):
         return f"{self.name} ({self.get_chat_type_display()})"
     
     def save(self, *args, **kwargs):
-        if self.chat_type == self.ChatType.PERSONAL and not self.name:
-            # Название как "User1 - User2"
+        """Автоматически генерируем название для личных чатов"""
+        # Сначала вызываем родительский save
+        super().save(*args, **kwargs)
+        
+        # ДЛЯ ЛИЧНЫХ ЧАТОВ: название = имя собеседника, отличного от первого участника
+        if self.chat_type == self.ChatType.PERSONAL:
             participants = list(self.participants.all())
             if len(participants) == 2:
-                names = [p.get_full_name() for p in participants]
-                self.name = " - ".join(names)
-
-        # Удаляем аватарку для личных чатов
+                # Простой подход: берем первого участника как "основного"
+                # и второго как "собеседника" (это работает для админки)
+                main_participant = participants[0]
+                other_participant = participants[1]
+                
+                # Безопасность: если создатель в участниках, используем другого
+                if self.created_by in participants:
+                    for participant in participants:
+                        if participant != self.created_by:
+                            other_participant = participant
+                            break
+                
+                # Формируем полное имя собеседника
+                full_name = other_participant.get_full_name()
+                
+                # Обновляем если нужно
+                if not self.name or self.name != full_name:
+                    self.name = full_name
+                    # Сохраняем без вызова save() чтобы избежать рекурсии
+                    self.__class__.objects.filter(id=self.id).update(name=full_name)
+            # Удаляем аватарку для личных чатов
         if self.chat_type == self.ChatType.PERSONAL:
             if self.avatar:
                 if os.path.isfile(self.avatar.path):

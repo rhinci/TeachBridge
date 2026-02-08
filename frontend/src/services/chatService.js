@@ -45,7 +45,7 @@ export const chatService = {
    */
   getChatById: async (chatId) => {
     try {
-      const response = await api.get(`//chats/chats/${chatId}/`);
+      const response = await api.get(`/chats/chats/${chatId}/`);
       return response.data;
     } catch (error) {
       console.error(`Ошибка при получении чата ${chatId}:`, error);
@@ -118,5 +118,35 @@ export const chatService = {
       console.error(`Ошибка при получении курсов чата ${chatId}:`, error);
       throw error;
     }
-  }
+  },
+
+    /**
+   * Получить сообщения чата
+   */
+  getChatMessages: async (chatId, sectionId = null) => {
+    try {
+      let url = `/chats/messages/chat_messages/?chat_id=${chatId}`;
+      if (sectionId) {
+        url += `&section_id=${sectionId}`;
+      }
+      const response = await api.get(url);
+      return response.data;
+    } catch (error) {
+      console.error(`Ошибка при получении сообщений чата ${chatId}:`, error);
+      throw error;
+    }
+  },
+
+  /**
+   * Отправить сообщение
+   */
+  sendMessage: async (messageData) => {
+    try {
+      const response = await api.post('/chats/messages/', messageData);
+      return response.data;
+    } catch (error) {
+      console.error('Ошибка при отправке сообщения:', error);
+      throw error;
+    }
+  },
 };

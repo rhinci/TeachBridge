@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom'; 
+import { authService } from '../utils/auth';
 
 const LoginForm = () => {
   const navigate = useNavigate(); // для перехода после входа
@@ -68,12 +69,7 @@ const LoginForm = () => {
       const data = await response.json();
 
       if (response.ok) {
-        // Сохраняем токены и данные пользователя
-        localStorage.setItem('access_token', data.access);
-        localStorage.setItem('refresh_token', data.refresh);
-        localStorage.setItem('user', JSON.stringify(data.user));
-
-        // Перенаправляем на главнуб
+        authService.saveUserData(data);
         navigate('/');
       } else {
         setErrors({});

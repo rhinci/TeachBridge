@@ -46,6 +46,10 @@ const PersonalChats = () => {
     setSearchQuery(e.target.value);
   };
 
+  useEffect(() => {
+    console.log('Loaded chats:', personalChats);
+  }, [personalChats]);
+
   return (
     <MainLayout
       header={<div>Личные чаты</div>}
