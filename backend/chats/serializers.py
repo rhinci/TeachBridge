@@ -188,7 +188,6 @@ class MessageSerializer(serializers.ModelSerializer):
                 general_section = ChatSection.objects.create(
                     chat=chat,
                     name='#general',
-                    description='Основной раздел для общего обсуждения',
                     order=0,
                     created_by=chat.created_by
                 )
@@ -246,7 +245,6 @@ class MessageCreateSerializer(serializers.ModelSerializer):
                 general_section = ChatSection.objects.create(
                     chat=chat,
                     name='#general',
-                    description='Основной раздел для общего обсуждения',
                     order=0,
                     created_by=chat.created_by
                 )
