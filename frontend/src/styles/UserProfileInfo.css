@@ -1,0 +1,60 @@
+/* Стили для информации профиля пользователя */
+
+.user-info-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 400px;
+}
+
+.user-info-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--color-light-gray);
+}
+
+.user-info-section:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.user-info-section-type {
+  font-size: 14px;
+  color: var(--color-text-light);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.user-info-section-content {
+  font-size: 16px;
+  color: var(--color-text);
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+/* Особые стили для статуса аккаунта */
+.user-info-section:nth-child(6) .user-info-section-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .user-info-container {
+    min-width: auto;
+  }
+  
+  .user-info-section-type {
+    font-size: 12px;
+  }
+  
+  .user-info-section-content {
+    font-size: 14px;
+  }
+}

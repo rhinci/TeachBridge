@@ -9,6 +9,7 @@ import Profile from './pages/Profile';
 import StudyChatPage from './pages/StudyChatPage';
 import PersonalChatPage from './pages/PersonalChatPage';
 import PrivateRoute from './components/PrivateRoute';
+import UserProfile from './pages/UserProfile';
 
 function App() {
   return (
@@ -55,6 +56,12 @@ function App() {
         <Route path="/profile" element={
           <PrivateRoute>
             <Profile />
+          </PrivateRoute>
+        } />
+
+        <Route path="/profile/:userId" element={
+          <PrivateRoute>
+            <UserProfile />
           </PrivateRoute>
         } />
 

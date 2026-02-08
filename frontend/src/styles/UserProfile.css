@@ -1,0 +1,52 @@
+/* Общие стили для страницы профиля пользователя */
+
+.user-profile-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 200px);
+  padding: 20px;
+  background: var(--color-gray);
+}
+
+.user-profile-container {
+  display: flex;
+  gap: 40px;
+  background: var(--color-white);
+  border-radius: 16px;
+  padding: 40px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  max-width: 1000px;
+  width: 100%;
+}
+
+.user-profile-loading,
+.user-profile-error {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 400px;
+  font-size: 18px;
+  color: var(--color-text-light);
+  background: var(--color-surface);
+  border-radius: 12px;
+  margin: 20px;
+  border: 2px solid var(--color-border);
+}
+
+.user-profile-error {
+  color: var(--color-danger);
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .user-profile-container {
+    flex-direction: column;
+    padding: 20px;
+    gap: 30px;
+  }
+  
+  .user-profile-wrapper {
+    padding: 10px;
+  }
+}
