@@ -1,0 +1,73 @@
+#version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: teachbridge-db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: ${DB_NAME:-teachbridge}
+      POSTGRES_USER: ${DB_USER:-teachbridge_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-teachbridge_password}
+    networks:
+      - teachbridge-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-teachbridge_user}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.prod
+    container_name: teachbridge-backend
+    volumes:
+      - media_volume:/app/media
+      - static_volume:/app/staticfiles
+    expose:
+      - "8000"
+    environment:
+      DJANGO_SETTINGS_MODULE: backend.settings.production
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-django-insecure-key-change-in-production}
+      DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-localhost,127.0.0.1,backend}
+      
+      DB_NAME: ${DB_NAME:-teachbridge}
+      DB_USER: ${DB_USER:-teachbridge_user}
+      DB_PASSWORD: ${DB_PASSWORD:-teachbridge_password}
+      DB_HOST: db
+      DB_PORT: 5432
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - teachbridge-network
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+    container_name: teachbridge-frontend
+    ports:
+      - "${FRONTEND_PORT:-80}:80"
+    depends_on:
+      - backend
+    networks:
+      - teachbridge-network
+    restart: unless-stopped
+
+networks:
+  teachbridge-network:
+    name: teachbridge-network
+    driver: bridge
+
+volumes:
+  postgres_data:
+    name: teachbridge_postgres_data
+  media_volume:
+    name: teachbridge_media_volume
+  static_volume:
+    name: teachbridge_static_volume

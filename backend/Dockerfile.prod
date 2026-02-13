@@ -1,0 +1,61 @@
+# Build stage
+FROM python:3.11-slim as builder
+
+WORKDIR /app
+
+# Устанавливаем системные зависимости для сборки
+RUN apt-get update && apt-get install -y \
+    gcc \
+    g++ \
+    libpq-dev \
+    python3-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Создаем виртуальное окружение
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+COPY requirements.txt .
+RUN pip install --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
+
+# Production stage
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Устанавливаем системные зависимости для работы
+RUN apt-get update && apt-get install -y \
+    libpq-dev \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Копируем виртуальное окружение
+COPY --from=builder /opt/venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+ENV DJANGO_SETTINGS_MODULE=backend.settings.production
+
+# ✅ Проверяем, что gunicorn установлен
+RUN which gunicorn || echo "Gunicorn not found!"
+
+# Создаем пользователя
+RUN addgroup --system --gid 1001 django && \
+    adduser --system --uid 1001 --gid 1001 django
+
+# Копируем код
+COPY --chown=django:django . .
+
+# Создаем директории
+RUN mkdir -p /app/staticfiles /app/media && \
+    chmod 755 /app/staticfiles /app/media && \
+    chown -R django:django /app
+
+USER django
+
+# Собираем статические файлы
+RUN python manage.py collectstatic --noinput
+
+EXPOSE 8000
+
+# ✅ Используем полный путь к gunicorn
+CMD ["/opt/venv/bin/gunicorn", "--bind", "0.0.0.0:8000", "--workers", "3", "backend.wsgi:application"]

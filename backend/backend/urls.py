@@ -4,6 +4,15 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from django.http import HttpResponse
+from django.http import JsonResponse
+
+def health_check(request):
+    """Health check endpoint для Docker и мониторинга"""
+    return JsonResponse({
+        'status': 'healthy',
+        'service': 'TeachBridge API',
+        'version': '1.0.0'
+    })
 
 def home_view(request):
     """Заглушка для корневой страницы"""

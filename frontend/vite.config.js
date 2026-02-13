@@ -1,16 +1,30 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
 
-// https://vite.dev/config/
+// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-    server: {
+  server: {
+    host: true,
     port: 3000,
-    strictPort: true,
-    host: '0.0.0.0',
-    watch: {
-      usePolling: true,
-      interval: 1000
-    }
+  },
+  build: {
+    outDir: 'dist',
+    sourcemap: false,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom', 'react-router-dom'],
+          axios: ['axios'],
+        },
+      },
+    },
+  },
+  // Важно для production!
+  base: '/',
+  // Для Docker
+  preview: {
+    port: 3000,
+    host: true,
   }
-})
+});
